@@ -10,8 +10,8 @@
 //
 
 #include <gtest/gtest.h>
-#include <r_HostCacheAlignedMemoryController.h>
-#include <r_TiledHostMemoryController.h>
+#include <HostCacheAlignedMemoryController.h>
+#include <TiledHostMemoryController.h>
 #include "../../../include/MatrixTestSuites/Utilities/TestUtilities.h"
 
 using namespace NaNLA::MemoryControllers;
@@ -24,7 +24,7 @@ TEST(TEST_SUITE_NAME, ShouldBeAbleToConstructTiledHostMemoryControllerAndAccessM
     const uint64_t COLS = 124;
     const uint64_t TILE_SIZE = 8;
 
-    r_TiledHostMemoryController<float, r_HostCacheAlignedMemoryController, RowMajorTileDetails> thmc(ROWS, COLS, TILE_SIZE);
+    TiledHostMemoryController<float, HostCacheAlignedMemoryController, RowMajorTileDetails> thmc(ROWS, COLS, TILE_SIZE);
     ASSERT_EQ(thmc.getRows(), ROWS);
     ASSERT_EQ(thmc.getCols(), COLS);
     ASSERT_EQ(thmc.getTotalSize(), ROWS * COLS);
@@ -49,7 +49,7 @@ TEST(TEST_SUITE_NAME, ShouldBeAbleToConstructTiledHostMemoryControllerAndAccessM
 }
 
 TEST(TEST_SUITE_NAME, ShouldBeAbleToCloneSelf) {
-    auto thmc = std::make_shared<r_TiledHostMemoryController<float, r_HostCacheAlignedMemoryController, ColMajorTileDetails>>(256, 256, 4);
+    auto thmc = std::make_shared<TiledHostMemoryController<float, HostCacheAlignedMemoryController, ColMajorTileDetails>>(256, 256, 4);
     for(uint64_t i = 0; i < thmc->getRows(); i++) {
         for(uint64_t j = 0; j < thmc->getCols(); j++) {
             thmc->at(i, j) = (float)i * (float)j;
@@ -63,10 +63,10 @@ TEST(TEST_SUITE_NAME, ShouldBeAbleToCloneSelf) {
 }
 
 TEST(TEST_SUITE_NAME, ShouldBeAbleToCopyConstruct) {
-    auto a = std::make_shared<r_TiledHostMemoryController<int, r_HostCacheAlignedMemoryController, RowMajorTileDetails>>(100,100, 4);
+    auto a = std::make_shared<TiledHostMemoryController<int, HostCacheAlignedMemoryController, RowMajorTileDetails>>(100, 100, 4);
     NaNLA::Test::Utilities::populateHMCWithRandomValues<int>(a);
 
-    auto b = std::make_shared<r_TiledHostMemoryController<int, r_HostCacheAlignedMemoryController, RowMajorTileDetails>>(*a.get());
+    auto b = std::make_shared<TiledHostMemoryController<int, HostCacheAlignedMemoryController, RowMajorTileDetails>>(*a.get());
 
     NaNLA::Test::Utilities::assertMemoryControllersAreEqual<int, int>(a,b);
 }

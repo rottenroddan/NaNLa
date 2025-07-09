@@ -1,91 +1,63 @@
 //
-// Created by Steven Roddan on 12/22/2023.
+// Created by Steven Roddan on 6/15/2024.
 //
 
-#include "include/Matrix/Matrix.h"
+#include "Matrix.h"
 
 namespace NaNLA {
-    template<class NumericType, template<class ...> class Controller>
-    Matrix<NumericType, Controller>::Matrix(uint64_t i, uint64_t j)
-    : AbstractMatrix<NumericType>(std::make_unique<Controller<NumericType>>(i,j)) {
-        ;
+    template<class NumericType, class ExplicitController>
+    template<class... Args>
+    Internal::Matrix<NumericType, ExplicitController>::Matrix(Args... args) : controller(args...) {
+
     }
 
-    template<class NumericType>
-    Matrix<NumericType, MemoryControllers::HostMemoryController>::Matrix(
-            std::unique_ptr<MemoryControllers::AbstractMemoryController < NumericType>> memoryController)
-            : AbstractMatrix<NumericType>(std::move(memoryController)){
-        ;
+    template<class NumericType, class ExplicitController>
+    auto Internal::Matrix<NumericType, ExplicitController>::getRows() const -> uint64_t {
+        return controller.getRows();
     }
 
-    /*
-     * HostMemoryController Specialization Definitions
-     */
-    template<class NumericType>
-    Matrix<NumericType, MemoryControllers::HostMemoryController>::Matrix(uint64_t i, uint64_t j)
-    : AbstractMatrix<NumericType>(std::make_unique<MemoryControllers::HostMemoryController < NumericType>>(i,j)) {
-         ;
+    template<class NumericType, class ExplicitController>
+    auto Internal::Matrix<NumericType, ExplicitController>::getCols() const -> uint64_t {
+        return controller.getCols();
     }
 
-    template<class NumericType>
-    NumericType
-    Matrix<NumericType, MemoryControllers::HostMemoryController>::get(uint64_t i, uint64_t j) {
-        return dynamic_cast<MemoryControllers::HostMemoryController<NumericType>*>(this->memoryController.get())->get(i, j);
+    template<class NumericType, class ExplicitController>
+    auto Internal::Matrix<NumericType, ExplicitController>::getTotalSize() const -> uint64_t {
+        return controller.getTotalSize();
     }
 
-    /*
-     *
-     */
-    template<class NumericType>
-    Matrix<NumericType, MemoryControllers::HostCacheMemoryController>::Matrix(std::unique_ptr<MemoryControllers::AbstractMemoryController < NumericType>> memoryController)
-    : Matrix<NumericType, MemoryControllers::HostMemoryController>(std::move(memoryController)) {
-        ;
+    template<class NumericType, class ExplicitController>
+    auto Internal::Matrix<NumericType, ExplicitController>::getActualRows() const -> uint64_t {
+        return controller.getActualRows();
     }
 
-    template<class NumericType>
-    constexpr uint64_t Matrix<NumericType, MemoryControllers::HostCacheMemoryController>::getCacheRowSize() const {
-        return dynamic_cast<MemoryControllers::HostCacheMemoryController<NumericType>*>(this->memoryController.get())->getCacheRowSize();
+    template<class NumericType, class ExplicitController>
+    auto Internal::Matrix<NumericType, ExplicitController>::getActualCols() const -> uint64_t {
+        return controller.getActualCols();
     }
 
-    template<class NumericType>
-    constexpr uint64_t Matrix<NumericType, MemoryControllers::HostCacheMemoryController>::getCacheColSize() const {
-        return dynamic_cast<MemoryControllers::HostCacheMemoryController<NumericType>*>(this->memoryController.get())->getCacheColSize();
+    template<class NumericType, class ExplicitController>
+    auto Internal::Matrix<NumericType, ExplicitController>::getActualTotalSize() const -> uint64_t {
+        return controller.getActualTotalSize();
     }
 
-    template<class NumericType>
-    uint64_t Matrix<NumericType, MemoryControllers::HostCacheMemoryController>::getTotalTileRows() const {
-        return dynamic_cast<MemoryControllers::HostCacheMemoryController<NumericType>*>(this->memoryController.get())->getTotalTileRows();
+    template<class NumericType, class ExplicitController>
+    auto Internal::Matrix<NumericType, ExplicitController>::getMatrix() const -> NumericType * {
+        return controller.getMatrix();
     }
 
-    template<class NumericType>
-    uint64_t Matrix<NumericType, MemoryControllers::HostCacheMemoryController>::getTotalTileCols() const {
-        return dynamic_cast<MemoryControllers::HostCacheMemoryController<NumericType>*>(this->memoryController.get())->getTotalTileCols();
+    template<class NumericType, class ExplicitController>
+    auto Internal::Matrix<NumericType, ExplicitController>::getController() -> NaNLA::MemoryControllers::MemoryController<NumericType>* {
+        return dynamic_cast<NaNLA::MemoryControllers::MemoryController<NumericType>*>(&this->controller);
     }
 
-    template<class NumericType>
-    NumericType* Matrix<NumericType, MemoryControllers::HostCacheMemoryController>::atTile(uint64_t i, uint64_t j) const {
-        return dynamic_cast<MemoryControllers::HostCacheMemoryController<NumericType>*>(this->memoryController.get())->atTile(i, j);
-    }
-
-    /*
-     * TiledRowMajorMemoryController Specialization Definitions
-     */
-    template<class NumericType>
-    Matrix<NumericType, MemoryControllers::TiledRowMajorMemoryController>::Matrix(uint64_t i, uint64_t j)
-    : Matrix<NumericType, MemoryControllers::HostCacheMemoryController>(
-            std::make_unique<MemoryControllers::TiledRowMajorMemoryController < NumericType>>(i,j))
-    {
-        ;
-    }
-
-    /*
-    * TiledRowMajorMemoryController Specialization Definitions
-    */
-    template<class NumericType>
-    Matrix<NumericType, MemoryControllers::TiledColMajorMemoryController>::Matrix(uint64_t i, uint64_t j)
-            : Matrix<NumericType, MemoryControllers::HostCacheMemoryController>(
-            std::make_unique<MemoryControllers::TiledColMajorMemoryController < NumericType>>(i,j))
-    {
-        ;
+    template<class NumericType, class ExplicitController>
+    template<class CopyNumericType, class DstMatrixType>
+    void Internal::Matrix<NumericType, ExplicitController>::copyTo(DstMatrixType dstMatrix) {
+        std::shared_ptr<NaNLA::MemoryControllers::MemoryController<NumericType>> _src(this->getController(),
+                                                                                      [](MemoryControllers::MemoryController<NumericType>*){;});
+        std::shared_ptr<NaNLA::MemoryControllers::MemoryController<CopyNumericType>> _dst(dstMatrix.getController(),
+                                                                                          [](MemoryControllers::MemoryController<CopyNumericType>*){;});
+        NaNLA::MemoryControllers::TransferStrategies::r_copyValues(_src, _dst);
     }
 }

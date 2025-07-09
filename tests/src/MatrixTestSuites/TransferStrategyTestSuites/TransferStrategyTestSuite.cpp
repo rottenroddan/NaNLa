@@ -5,10 +5,10 @@
 #include <gtest/gtest.h>
 
 #include <ThreadPool/ThreadPool.h>
-#include <r_DefaultTransferStrategy.h>
-#include <r_HostMemoryController.h>
-#include <r_PinnedMemoryController.h>
-#include <r_DeviceMemoryController.h>
+#include <DefaultTransferStrategy.h>
+#include <HostMemoryController.h>
+#include <PinnedMemoryController.h>
+#include <DeviceMemoryController.h>
 #include <InvalidDimensionError.h>
 
 #include <iomanip>
@@ -22,23 +22,23 @@ using namespace NaNLA::MemoryControllers;
 using namespace NaNLA::Internal;
 
 TEST(TEST_SUITE_NAME, shouldCopyHostToHost) {
-    auto hmc1 = std::make_shared<r_HostMemoryController<int>> (128, 128);
-    auto hmc2 = std::make_shared<r_HostMemoryController<int>> (128, 128);
+    auto hmc1 = std::make_shared<HostMemoryController<int>> (128, 128);
+    auto hmc2 = std::make_shared<HostMemoryController<int>> (128, 128);
     NaNLA::Test::Utilities::populateHMCWithRandomValues<int>(std::dynamic_pointer_cast<HostAccessible<int>>(hmc1));
     TransferStrategies::r_copyValues<int, int>(hmc1, hmc2);
     NaNLA::Test::Utilities::assertMemoryControllersAreEqual<int,int>(hmc1, hmc2);
 }
 
 TEST(TEST_SUITE_NAME, shouldCopyHostToDeviceBackToHost) {
-    auto hmc = std::make_shared<r_HostMemoryController<int>> (16, 16);
-    auto dmc = std::make_shared<r_DeviceMemoryController<int>>(16, 16);
+    auto hmc = std::make_shared<HostMemoryController<int>> (16, 16);
+    auto dmc = std::make_shared<DeviceMemoryController<int>>(16, 16);
     NaNLA::Test::Utilities::populateHMCWithRandomValues<int>(std::dynamic_pointer_cast<HostAccessible<int>>(hmc));
 
     // to device
     TransferStrategies::r_copyValues<int, int>(std::dynamic_pointer_cast<MemoryController<int>>(hmc),
                                                std::dynamic_pointer_cast<MemoryController<int>>(dmc));
     // back to host
-    auto testHMC = std::make_shared<r_HostMemoryController<int>> (16,16);
+    auto testHMC = std::make_shared<HostMemoryController<int>> (16, 16);
     TransferStrategies::r_copyValues<int, int>(std::dynamic_pointer_cast<MemoryController<int>>(dmc),
                                                std::dynamic_pointer_cast<MemoryController<int>>(testHMC));
 
@@ -46,15 +46,15 @@ TEST(TEST_SUITE_NAME, shouldCopyHostToDeviceBackToHost) {
 }
 
 TEST(TEST_SUITE_NAME, shouldCopyHostToDeviceBackToHostDifferentTypes) {
-    auto hmc = std::make_shared<r_HostMemoryController<int>> (16, 16);
-    auto dmc = std::make_shared<r_DeviceMemoryController<long>>(16, 16);
+    auto hmc = std::make_shared<HostMemoryController<int>> (16, 16);
+    auto dmc = std::make_shared<DeviceMemoryController<long>>(16, 16);
     NaNLA::Test::Utilities::populateHMCWithRandomValues<int>(std::dynamic_pointer_cast<HostAccessible<int>>(hmc));
 
     // to device
     TransferStrategies::r_copyValues<int, long>(std::dynamic_pointer_cast<MemoryController<int>>(hmc),
                                                std::dynamic_pointer_cast<MemoryController<long>>(dmc));
     // back to host
-    auto testHMC = std::make_shared<r_HostMemoryController<int>> (16,16);
+    auto testHMC = std::make_shared<HostMemoryController<int>> (16, 16);
     TransferStrategies::r_copyValues<long, int>(std::dynamic_pointer_cast<MemoryController<long>>(dmc),
                                                std::dynamic_pointer_cast<MemoryController<int>>(testHMC));
 
@@ -62,15 +62,15 @@ TEST(TEST_SUITE_NAME, shouldCopyHostToDeviceBackToHostDifferentTypes) {
 }
 
 TEST(TEST_SUITE_NAME, shouldCopyHost_To_Device_Back_To_Host_WhenHostIsRowTiled) {
-    auto hmc = std::make_shared<r_TiledHostMemoryController<int, r_HostCacheAlignedMemoryController, RowMajorTileDetails>> (16, 16, 4);
-    auto dmc = std::make_shared<r_DeviceMemoryController<int>>(16, 16);
+    auto hmc = std::make_shared<TiledHostMemoryController<int, HostCacheAlignedMemoryController, RowMajorTileDetails>> (16, 16, 4);
+    auto dmc = std::make_shared<DeviceMemoryController<int>>(16, 16);
     NaNLA::Test::Utilities::populateHMCWithRandomValues<int>(std::dynamic_pointer_cast<HostAccessible<int>>(hmc));
 
     // to device
     TransferStrategies::r_copyValues<int, int>(std::dynamic_pointer_cast<MemoryController<int>>(hmc),
                                                 std::dynamic_pointer_cast<MemoryController<int>>(dmc));
     // back to host
-    auto testHMC = std::make_shared<r_HostMemoryController<int>> (16,16);
+    auto testHMC = std::make_shared<HostMemoryController<int>> (16, 16);
     TransferStrategies::r_copyValues<int, int>(std::dynamic_pointer_cast<MemoryController<int>>(dmc),
                                                 std::dynamic_pointer_cast<MemoryController<int>>(testHMC));
 
@@ -78,15 +78,15 @@ TEST(TEST_SUITE_NAME, shouldCopyHost_To_Device_Back_To_Host_WhenHostIsRowTiled) 
 }
 
 TEST(TEST_SUITE_NAME, shouldCopyHost_To_Device_Back_To_Host_WhenHostIsDifferentTypeRowTiled) {
-    auto hmc = std::make_shared<r_TiledHostMemoryController<int, r_HostCacheAlignedMemoryController, RowMajorTileDetails>> (16, 16, 4);
-    auto dmc = std::make_shared<r_DeviceMemoryController<long>>(16, 16);
+    auto hmc = std::make_shared<TiledHostMemoryController<int, HostCacheAlignedMemoryController, RowMajorTileDetails>> (16, 16, 4);
+    auto dmc = std::make_shared<DeviceMemoryController<long>>(16, 16);
     NaNLA::Test::Utilities::populateHMCWithRandomValues<int>(std::dynamic_pointer_cast<HostAccessible<int>>(hmc));
 
     // to device
     TransferStrategies::r_copyValues<int, long>(std::dynamic_pointer_cast<MemoryController<int>>(hmc),
                                                std::dynamic_pointer_cast<MemoryController<long>>(dmc));
     // back to host
-    auto testHMC = std::make_shared<r_HostMemoryController<int>> (16,16);
+    auto testHMC = std::make_shared<HostMemoryController<int>> (16, 16);
     TransferStrategies::r_copyValues<long, int>(std::dynamic_pointer_cast<MemoryController<long>>(dmc),
                                                std::dynamic_pointer_cast<MemoryController<int>>(testHMC));
 
@@ -94,15 +94,15 @@ TEST(TEST_SUITE_NAME, shouldCopyHost_To_Device_Back_To_Host_WhenHostIsDifferentT
 }
 
 TEST(TEST_SUITE_NAME, shouldCopyHost_To_Device_Back_To_Host_WhenHostIsDifferentTypeColTiled) {
-    auto hmc = std::make_shared<r_TiledHostMemoryController<int, r_HostCacheAlignedMemoryController, ColMajorTileDetails>> (16, 16, 4);
-    auto dmc = std::make_shared<r_DeviceMemoryController<long>>(16, 16);
+    auto hmc = std::make_shared<TiledHostMemoryController<int, HostCacheAlignedMemoryController, ColMajorTileDetails>> (16, 16, 4);
+    auto dmc = std::make_shared<DeviceMemoryController<long>>(16, 16);
     NaNLA::Test::Utilities::populateHMCWithRandomValues<int>(std::dynamic_pointer_cast<HostAccessible<int>>(hmc));
 
     // to device
     TransferStrategies::r_copyValues<int, long>(std::dynamic_pointer_cast<MemoryController<int>>(hmc),
                                                 std::dynamic_pointer_cast<MemoryController<long>>(dmc));
     // back to host
-    auto testHMC = std::make_shared<r_HostMemoryController<int>> (16,16);
+    auto testHMC = std::make_shared<HostMemoryController<int>> (16, 16);
     TransferStrategies::r_copyValues<long, int>(std::dynamic_pointer_cast<MemoryController<long>>(dmc),
                                                 std::dynamic_pointer_cast<MemoryController<int>>(testHMC));
 
@@ -110,15 +110,15 @@ TEST(TEST_SUITE_NAME, shouldCopyHost_To_Device_Back_To_Host_WhenHostIsDifferentT
 }
 
 TEST(TEST_SUITE_NAME, shouldCopyHostToDeviceBackToHostWhenHostIsRowTiledAndDeviceIsRowTiled) {
-    auto hmc = std::make_shared<r_TiledHostMemoryController<int, r_HostCacheAlignedMemoryController, RowMajorTileDetails>> (16, 16, 4);
-    auto dmc = std::make_shared<r_TiledDeviceMemoryController<long, r_DeviceMemoryController, RowMajorTileDetails>>(16, 16, 4);
+    auto hmc = std::make_shared<TiledHostMemoryController<int, HostCacheAlignedMemoryController, RowMajorTileDetails>> (16, 16, 4);
+    auto dmc = std::make_shared<TiledDeviceMemoryController<long, DeviceMemoryController, RowMajorTileDetails>>(16, 16, 4);
     NaNLA::Test::Utilities::populateHMCWithRandomValues<int>(std::dynamic_pointer_cast<HostAccessible<int>>(hmc));
 
     // to device
     TransferStrategies::r_copyValues<int, long>(std::dynamic_pointer_cast<MemoryController<int>>(hmc),
                                                 std::dynamic_pointer_cast<MemoryController<long>>(dmc));
     // back to host
-    auto testHMC = std::make_shared<r_HostMemoryController<int>> (16,16);
+    auto testHMC = std::make_shared<HostMemoryController<int>> (16, 16);
     TransferStrategies::r_copyValues<long, int>(std::dynamic_pointer_cast<MemoryController<long>>(dmc),
                                                 std::dynamic_pointer_cast<MemoryController<int>>(testHMC));
 
@@ -126,15 +126,15 @@ TEST(TEST_SUITE_NAME, shouldCopyHostToDeviceBackToHostWhenHostIsRowTiledAndDevic
 }
 
 TEST(TEST_SUITE_NAME, shouldCopyHostToDeviceBackToHostWhenHostIsColTiledAndDeviceIsColTiled) {
-    auto hmc = std::make_shared<r_TiledHostMemoryController<int, r_HostCacheAlignedMemoryController, ColMajorTileDetails>> (16, 16, 4);
-    auto dmc = std::make_shared<r_TiledDeviceMemoryController<long, r_DeviceMemoryController, ColMajorTileDetails>>(16, 16, 4);
+    auto hmc = std::make_shared<TiledHostMemoryController<int, HostCacheAlignedMemoryController, ColMajorTileDetails>> (16, 16, 4);
+    auto dmc = std::make_shared<TiledDeviceMemoryController<long, DeviceMemoryController, ColMajorTileDetails>>(16, 16, 4);
     NaNLA::Test::Utilities::populateHMCWithRandomValues<int>(std::dynamic_pointer_cast<HostAccessible<int>>(hmc));
 
     // to device
     TransferStrategies::r_copyValues<int, long>(std::dynamic_pointer_cast<MemoryController<int>>(hmc),
                                                 std::dynamic_pointer_cast<MemoryController<long>>(dmc));
     // back to host
-    auto testHMC = std::make_shared<r_HostMemoryController<int>> (16,16);
+    auto testHMC = std::make_shared<HostMemoryController<int>> (16, 16);
     TransferStrategies::r_copyValues<long, int>(std::dynamic_pointer_cast<MemoryController<long>>(dmc),
                                                 std::dynamic_pointer_cast<MemoryController<int>>(testHMC));
 
@@ -142,15 +142,15 @@ TEST(TEST_SUITE_NAME, shouldCopyHostToDeviceBackToHostWhenHostIsColTiledAndDevic
 }
 
 TEST(TEST_SUITE_NAME, shouldCopyHostToDeviceBackToHostWhenHostIsRowTiledAndDeviceIsColTiled) {
-    auto hmc = std::make_shared<r_TiledHostMemoryController<int, r_HostCacheAlignedMemoryController, RowMajorTileDetails>> (16, 16, 4);
-    auto dmc = std::make_shared<r_TiledDeviceMemoryController<long, r_DeviceMemoryController, ColMajorTileDetails>>(16, 16, 4);
+    auto hmc = std::make_shared<TiledHostMemoryController<int, HostCacheAlignedMemoryController, RowMajorTileDetails>> (16, 16, 4);
+    auto dmc = std::make_shared<TiledDeviceMemoryController<long, DeviceMemoryController, ColMajorTileDetails>>(16, 16, 4);
     NaNLA::Test::Utilities::populateHMCWithRandomValues<int>(std::dynamic_pointer_cast<HostAccessible<int>>(hmc));
 
     // to device
     TransferStrategies::r_copyValues<int, long>(std::dynamic_pointer_cast<MemoryController<int>>(hmc),
                                                 std::dynamic_pointer_cast<MemoryController<long>>(dmc));
     // back to host
-    auto testHMC = std::make_shared<r_HostMemoryController<int>> (16,16);
+    auto testHMC = std::make_shared<HostMemoryController<int>> (16, 16);
     TransferStrategies::r_copyValues<long, int>(std::dynamic_pointer_cast<MemoryController<long>>(dmc),
                                                 std::dynamic_pointer_cast<MemoryController<int>>(testHMC));
 
@@ -158,15 +158,15 @@ TEST(TEST_SUITE_NAME, shouldCopyHostToDeviceBackToHostWhenHostIsRowTiledAndDevic
 }
 
 TEST(TEST_SUITE_NAME, shouldCopyHostToDeviceBackToHostWhenHostIsColTiledAndDeviceIsRowTiled) {
-    auto hmc = std::make_shared<r_TiledHostMemoryController<int, r_HostCacheAlignedMemoryController, ColMajorTileDetails>> (16, 16, 4);
-    auto dmc = std::make_shared<r_TiledDeviceMemoryController<long, r_DeviceMemoryController, RowMajorTileDetails>>(16, 16, 4);
+    auto hmc = std::make_shared<TiledHostMemoryController<int, HostCacheAlignedMemoryController, ColMajorTileDetails>> (16, 16, 4);
+    auto dmc = std::make_shared<TiledDeviceMemoryController<long, DeviceMemoryController, RowMajorTileDetails>>(16, 16, 4);
     NaNLA::Test::Utilities::populateHMCWithRandomValues<int>(std::dynamic_pointer_cast<HostAccessible<int>>(hmc));
 
     // to device
     TransferStrategies::r_copyValues<int, long>(std::dynamic_pointer_cast<MemoryController<int>>(hmc),
                                                 std::dynamic_pointer_cast<MemoryController<long>>(dmc));
     // back to host
-    auto testHMC = std::make_shared<r_HostMemoryController<int>> (16,16);
+    auto testHMC = std::make_shared<HostMemoryController<int>> (16, 16);
     TransferStrategies::r_copyValues<long, int>(std::dynamic_pointer_cast<MemoryController<long>>(dmc),
                                                 std::dynamic_pointer_cast<MemoryController<int>>(testHMC));
 
@@ -174,15 +174,15 @@ TEST(TEST_SUITE_NAME, shouldCopyHostToDeviceBackToHostWhenHostIsColTiledAndDevic
 }
 
 TEST(TEST_SUITE_NAME, shouldCopyHostToDeviceBackToHostWhenBothAreTiledSameAndSameTileSize) {
-    auto hmc = std::make_shared<r_TiledHostMemoryController<int, r_HostCacheAlignedMemoryController, RowMajorTileDetails>> (16, 16, 4);
-    auto dmc = std::make_shared<r_TiledDeviceMemoryController<int, r_DeviceMemoryController, RowMajorTileDetails>>(16, 16, 4);
+    auto hmc = std::make_shared<TiledHostMemoryController<int, HostCacheAlignedMemoryController, RowMajorTileDetails>> (16, 16, 4);
+    auto dmc = std::make_shared<TiledDeviceMemoryController<int, DeviceMemoryController, RowMajorTileDetails>>(16, 16, 4);
     NaNLA::Test::Utilities::populateHMCWithRandomValues<int>(std::dynamic_pointer_cast<HostAccessible<int>>(hmc));
 
     // to device
     TransferStrategies::r_copyValues<int, int>(std::dynamic_pointer_cast<MemoryController<int>>(hmc),
                                                 std::dynamic_pointer_cast<MemoryController<int>>(dmc));
     // back to host
-    auto testHMC = std::make_shared<r_TiledHostMemoryController<int, r_HostCacheAlignedMemoryController, RowMajorTileDetails>> (16,16, 4);
+    auto testHMC = std::make_shared<TiledHostMemoryController<int, HostCacheAlignedMemoryController, RowMajorTileDetails>> (16, 16, 4);
     TransferStrategies::r_copyValues<int, int>(std::dynamic_pointer_cast<MemoryController<int>>(dmc),
                                                 std::dynamic_pointer_cast<MemoryController<int>>(testHMC));
 
@@ -190,15 +190,15 @@ TEST(TEST_SUITE_NAME, shouldCopyHostToDeviceBackToHostWhenBothAreTiledSameAndSam
 }
 
 TEST(TEST_SUITE_NAME, shouldCopyHostToDeviceBackToHostWhenBothAreTiledSameAndDifferentTileSize) {
-    auto hmc = std::make_shared<r_TiledHostMemoryController<int, r_HostCacheAlignedMemoryController, RowMajorTileDetails>> (16, 16, 4);
-    auto dmc = std::make_shared<r_TiledDeviceMemoryController<int, r_DeviceMemoryController, RowMajorTileDetails>>(16, 16, 8);
+    auto hmc = std::make_shared<TiledHostMemoryController<int, HostCacheAlignedMemoryController, RowMajorTileDetails>> (16, 16, 4);
+    auto dmc = std::make_shared<TiledDeviceMemoryController<int, DeviceMemoryController, RowMajorTileDetails>>(16, 16, 8);
     NaNLA::Test::Utilities::populateHMCWithRandomValues<int>(std::dynamic_pointer_cast<HostAccessible<int>>(hmc));
 
     // to device
     TransferStrategies::r_copyValues<int, int>(std::dynamic_pointer_cast<MemoryController<int>>(hmc),
                                                std::dynamic_pointer_cast<MemoryController<int>>(dmc));
     // back to host
-    auto testHMC = std::make_shared<r_TiledHostMemoryController<int, r_HostCacheAlignedMemoryController, RowMajorTileDetails>> (16,16, 12);
+    auto testHMC = std::make_shared<TiledHostMemoryController<int, HostCacheAlignedMemoryController, RowMajorTileDetails>> (16, 16, 12);
     TransferStrategies::r_copyValues<int, int>(std::dynamic_pointer_cast<MemoryController<int>>(dmc),
                                                std::dynamic_pointer_cast<MemoryController<int>>(testHMC));
 
@@ -206,15 +206,15 @@ TEST(TEST_SUITE_NAME, shouldCopyHostToDeviceBackToHostWhenBothAreTiledSameAndDif
 }
 
 TEST(TEST_SUITE_NAME, shouldCopyHostToDeviceBackToHostWhenHostIsNotTiledAndDeviceIsRowTiled) {
-    auto hmc = std::make_shared<r_HostMemoryController<int>> (16, 16);
-    auto dmc = std::make_shared<r_TiledDeviceMemoryController<int, r_DeviceMemoryController, RowMajorTileDetails>>(16, 16, 4);
+    auto hmc = std::make_shared<HostMemoryController<int>> (16, 16);
+    auto dmc = std::make_shared<TiledDeviceMemoryController<int, DeviceMemoryController, RowMajorTileDetails>>(16, 16, 4);
     NaNLA::Test::Utilities::populateHMCWithRandomValues<int>(std::dynamic_pointer_cast<HostAccessible<int>>(hmc));
 
     // to device
     TransferStrategies::r_copyValues<int, int>(std::dynamic_pointer_cast<MemoryController<int>>(hmc),
                                                std::dynamic_pointer_cast<MemoryController<int>>(dmc));
     // back to host
-    auto testHMC = std::make_shared<r_TiledHostMemoryController<int, r_HostCacheAlignedMemoryController, RowMajorTileDetails>> (16,16, 4);
+    auto testHMC = std::make_shared<TiledHostMemoryController<int, HostCacheAlignedMemoryController, RowMajorTileDetails>> (16, 16, 4);
     TransferStrategies::r_copyValues<int, int>(std::dynamic_pointer_cast<MemoryController<int>>(dmc),
                                                std::dynamic_pointer_cast<MemoryController<int>>(testHMC));
 
@@ -222,15 +222,15 @@ TEST(TEST_SUITE_NAME, shouldCopyHostToDeviceBackToHostWhenHostIsNotTiledAndDevic
 }
 
 TEST(TEST_SUITE_NAME, shouldCopyHostToDeviceBackToHostWhenHostIsNotTiledAndDeviceIsColTiled) {
-    auto hmc = std::make_shared<r_HostMemoryController<int>> (16, 16);
-    auto dmc = std::make_shared<r_TiledDeviceMemoryController<int, r_DeviceMemoryController, ColMajorTileDetails>>(16, 16, 4);
+    auto hmc = std::make_shared<HostMemoryController<int>> (16, 16);
+    auto dmc = std::make_shared<TiledDeviceMemoryController<int, DeviceMemoryController, ColMajorTileDetails>>(16, 16, 4);
     NaNLA::Test::Utilities::populateHMCWithRandomValues<int>(std::dynamic_pointer_cast<HostAccessible<int>>(hmc));
 
     // to device
     TransferStrategies::r_copyValues<int, int>(std::dynamic_pointer_cast<MemoryController<int>>(hmc),
                                                std::dynamic_pointer_cast<MemoryController<int>>(dmc));
     // back to host
-    auto testHMC = std::make_shared<r_TiledHostMemoryController<int, r_HostCacheAlignedMemoryController, RowMajorTileDetails>> (16,16, 4);
+    auto testHMC = std::make_shared<TiledHostMemoryController<int, HostCacheAlignedMemoryController, RowMajorTileDetails>> (16, 16, 4);
     TransferStrategies::r_copyValues<int, int>(std::dynamic_pointer_cast<MemoryController<int>>(dmc),
                                                std::dynamic_pointer_cast<MemoryController<int>>(testHMC));
 
@@ -238,15 +238,15 @@ TEST(TEST_SUITE_NAME, shouldCopyHostToDeviceBackToHostWhenHostIsNotTiledAndDevic
 }
 
 TEST(TEST_SUITE_NAME, shouldCopyHToTCDToTRH) {
-    auto hmc = std::make_shared<r_HostMemoryController<int>> (16, 16);
-    auto dmc = std::make_shared<r_TiledDeviceMemoryController<int, r_DeviceMemoryController, RowMajorTileDetails>>(16, 16, 4);
+    auto hmc = std::make_shared<HostMemoryController<int>> (16, 16);
+    auto dmc = std::make_shared<TiledDeviceMemoryController<int, DeviceMemoryController, RowMajorTileDetails>>(16, 16, 4);
     NaNLA::Test::Utilities::populateHMCWithRandomValues<int>(std::dynamic_pointer_cast<HostAccessible<int>>(hmc));
 
     // to device
     TransferStrategies::r_copyValues<int, int>(std::dynamic_pointer_cast<MemoryController<int>>(hmc),
                                                std::dynamic_pointer_cast<MemoryController<int>>(dmc));
     // back to host
-    auto testHMC = std::make_shared<r_TiledHostMemoryController<int, r_HostCacheAlignedMemoryController, ColMajorTileDetails>> (16,16, 4);
+    auto testHMC = std::make_shared<TiledHostMemoryController<int, HostCacheAlignedMemoryController, ColMajorTileDetails>> (16, 16, 4);
     TransferStrategies::r_copyValues<int, int>(std::dynamic_pointer_cast<MemoryController<int>>(dmc),
                                                std::dynamic_pointer_cast<MemoryController<int>>(testHMC));
 
@@ -262,15 +262,15 @@ TEST(TEST_SUITE_NAME, shouldCopyHToTCDToTRH) {
 }
 
 TEST(TEST_SUITE_NAME, shouldCopyHToDToTRH) {
-    auto hmc = std::make_shared<r_HostMemoryController<int>> (16, 16);
-    auto dmc = std::make_shared<r_DeviceMemoryController<int>>(16, 16);
+    auto hmc = std::make_shared<HostMemoryController<int>> (16, 16);
+    auto dmc = std::make_shared<DeviceMemoryController<int>>(16, 16);
     NaNLA::Test::Utilities::populateHMCWithRandomValues<int>(std::dynamic_pointer_cast<HostAccessible<int>>(hmc));
 
     // to device
     TransferStrategies::r_copyValues<int, int>(std::dynamic_pointer_cast<MemoryController<int>>(hmc),
                                                std::dynamic_pointer_cast<MemoryController<int>>(dmc));
     // back to host
-    auto testHMC = std::make_shared<r_TiledHostMemoryController<int, r_HostCacheAlignedMemoryController, RowMajorTileDetails>> (16,16, 4);
+    auto testHMC = std::make_shared<TiledHostMemoryController<int, HostCacheAlignedMemoryController, RowMajorTileDetails>> (16, 16, 4);
     TransferStrategies::r_copyValues<int, int>(std::dynamic_pointer_cast<MemoryController<int>>(dmc),
                                                std::dynamic_pointer_cast<MemoryController<int>>(testHMC));
 
@@ -278,15 +278,15 @@ TEST(TEST_SUITE_NAME, shouldCopyHToDToTRH) {
 }
 
 TEST(TEST_SUITE_NAME, shouldCopyHToDToTCH) {
-    auto hmc = std::make_shared<r_HostMemoryController<int>> (16, 16);
-    auto dmc = std::make_shared<r_DeviceMemoryController<int>>(16, 16);
+    auto hmc = std::make_shared<HostMemoryController<int>> (16, 16);
+    auto dmc = std::make_shared<DeviceMemoryController<int>>(16, 16);
     NaNLA::Test::Utilities::populateHMCWithRandomValues<int>(std::dynamic_pointer_cast<HostAccessible<int>>(hmc));
 
     // to device
     TransferStrategies::r_copyValues<int, int>(std::dynamic_pointer_cast<MemoryController<int>>(hmc),
                                                std::dynamic_pointer_cast<MemoryController<int>>(dmc));
     // back to host
-    auto testHMC = std::make_shared<r_TiledHostMemoryController<int, r_HostCacheAlignedMemoryController, ColMajorTileDetails>> (16,16, 4);
+    auto testHMC = std::make_shared<TiledHostMemoryController<int, HostCacheAlignedMemoryController, ColMajorTileDetails>> (16, 16, 4);
     TransferStrategies::r_copyValues<int, int>(std::dynamic_pointer_cast<MemoryController<int>>(dmc),
                                                std::dynamic_pointer_cast<MemoryController<int>>(testHMC));
 
@@ -294,9 +294,9 @@ TEST(TEST_SUITE_NAME, shouldCopyHToDToTCH) {
 }
 
 TEST(TEST_SUITE_NAME, shouldCopyHToTCDToTCDToTCH) {
-    auto hmc = std::make_shared<r_HostMemoryController<int>> (16, 16);
-    auto dmc1 = std::make_shared<r_TiledDeviceMemoryController<int, r_DeviceMemoryController, ColMajorTileDetails>>(16, 16, 4);
-    auto dmc2 = std::make_shared<r_TiledDeviceMemoryController<int, r_DeviceMemoryController, ColMajorTileDetails>>(16, 16, 4);
+    auto hmc = std::make_shared<HostMemoryController<int>> (16, 16);
+    auto dmc1 = std::make_shared<TiledDeviceMemoryController<int, DeviceMemoryController, ColMajorTileDetails>>(16, 16, 4);
+    auto dmc2 = std::make_shared<TiledDeviceMemoryController<int, DeviceMemoryController, ColMajorTileDetails>>(16, 16, 4);
 
 
     NaNLA::Test::Utilities::populateHMCWithRandomValues<int>(std::dynamic_pointer_cast<HostAccessible<int>>(hmc));
@@ -309,7 +309,7 @@ TEST(TEST_SUITE_NAME, shouldCopyHToTCDToTCDToTCH) {
     TransferStrategies::r_copyValues<int,int>(std::dynamic_pointer_cast<MemoryController<int>>(dmc1),
                                               std::dynamic_pointer_cast<MemoryController<int>>(dmc2));
     // back to host
-    auto testHMC = std::make_shared<r_TiledHostMemoryController<int, r_HostCacheAlignedMemoryController, ColMajorTileDetails>> (16,16, 4);
+    auto testHMC = std::make_shared<TiledHostMemoryController<int, HostCacheAlignedMemoryController, ColMajorTileDetails>> (16, 16, 4);
     TransferStrategies::r_copyValues<int, int>(std::dynamic_pointer_cast<MemoryController<int>>(dmc2),
                                                std::dynamic_pointer_cast<MemoryController<int>>(testHMC));
 
@@ -317,8 +317,8 @@ TEST(TEST_SUITE_NAME, shouldCopyHToTCDToTCDToTCH) {
 }
 
 TEST(TEST_SUITE_NAME, shouldThrowInvalidDimensionExceptionWhenDimensionsDontMatchCopy) {
-    auto hmc = std::make_shared<r_HostMemoryController<int>> (16, 16);
-    auto dmc1 = std::make_shared<r_HostMemoryController<int>>(4, 4);
+    auto hmc = std::make_shared<HostMemoryController<int>> (16, 16);
+    auto dmc1 = std::make_shared<HostMemoryController<int>>(4, 4);
 
     try {
         TransferStrategies::r_copyValues<int, int>(std::dynamic_pointer_cast<MemoryController<int>>(hmc),
@@ -331,9 +331,9 @@ TEST(TEST_SUITE_NAME, shouldThrowInvalidDimensionExceptionWhenDimensionsDontMatc
 }
 
 TEST(TEST_SUITE_NAME, shouldCopyHToD1ToD2ToH) {
-    auto hmc = std::make_shared<r_HostMemoryController<int>> (556, 993);
+    auto hmc = std::make_shared<HostMemoryController<int>> (556, 993);
     NaNLA::Common::setThreadCudaDevice(0);
-    auto dmc1 = std::make_shared<r_DeviceMemoryController<int>>(556, 993);
+    auto dmc1 = std::make_shared<DeviceMemoryController<int>>(556, 993);
     NaNLA::Test::Utilities::populateHMCWithRandomValues<int>(std::dynamic_pointer_cast<HostAccessible<int>>(hmc));
 
     // to device 0
@@ -341,13 +341,13 @@ TEST(TEST_SUITE_NAME, shouldCopyHToD1ToD2ToH) {
                                                std::dynamic_pointer_cast<MemoryController<int>>(dmc1));
 
     NaNLA::Common::setThreadCudaDevice(1);
-    auto dmc2 = std::make_shared<r_DeviceMemoryController<int>>(556, 993);
+    auto dmc2 = std::make_shared<DeviceMemoryController<int>>(556, 993);
 
     TransferStrategies::r_copyValues<int, int>(std::dynamic_pointer_cast<MemoryController<int>>(dmc1),
                                                std::dynamic_pointer_cast<MemoryController<int>>(dmc2));
 
     // back to host
-    auto testHMC = std::make_shared<r_HostMemoryController<int>> (556,993);
+    auto testHMC = std::make_shared<HostMemoryController<int>> (556, 993);
     TransferStrategies::r_copyValues<int, int>(std::dynamic_pointer_cast<MemoryController<int>>(dmc2),
                                                std::dynamic_pointer_cast<MemoryController<int>>(testHMC));
 
@@ -357,21 +357,21 @@ TEST(TEST_SUITE_NAME, shouldCopyHToD1ToD2ToH) {
 template<class NumericType>
 std::shared_ptr<HostAccessible<NumericType>> generateHostMemoryController(uint64_t i, uint64_t j,uint64_t type) {
     if(type == 0) {
-        auto mc = std::make_shared<r_HostMemoryController<NumericType>>(i,j);
+        auto mc = std::make_shared<HostMemoryController<NumericType>>(i, j);
         return mc;
     } else if(type == 1) {
-        auto mc = std::make_shared<r_TiledHostMemoryController<NumericType, r_HostMemoryController, RowMajorTileDetails>>(i,j, 4);
+        auto mc = std::make_shared<TiledHostMemoryController<NumericType, HostMemoryController, RowMajorTileDetails>>(i, j, 4);
         return mc;
     } else if(type == 2) {
-        auto mc = std::make_shared<r_TiledHostMemoryController<NumericType, r_HostMemoryController, RowMajorTileDetails>>(
+        auto mc = std::make_shared<TiledHostMemoryController<NumericType, HostMemoryController, RowMajorTileDetails>>(
                 i, j, 8);
         return mc;
     } else if(type == 3) {
-        auto mc = std::make_shared<r_TiledHostMemoryController<NumericType, r_HostMemoryController, ColMajorTileDetails>>(
+        auto mc = std::make_shared<TiledHostMemoryController<NumericType, HostMemoryController, ColMajorTileDetails>>(
                 i, j, 4);
         return mc;
     } else if(type == 4) {
-        auto mc = std::make_shared<r_TiledHostMemoryController<NumericType, r_HostMemoryController, ColMajorTileDetails>>(
+        auto mc = std::make_shared<TiledHostMemoryController<NumericType, HostMemoryController, ColMajorTileDetails>>(
                 i, j, 8);
         return mc;
     }
@@ -380,21 +380,21 @@ std::shared_ptr<HostAccessible<NumericType>> generateHostMemoryController(uint64
 template<class NumericType>
 std::shared_ptr<MemoryController<NumericType>> generateDeviceMemoryController(uint64_t i, uint64_t j,uint64_t type) {
     if(type == 0) {
-        auto mc = std::make_shared<r_DeviceMemoryController<NumericType>>(i,j);
+        auto mc = std::make_shared<DeviceMemoryController<NumericType>>(i, j);
         return mc;
     } else if(type == 1) {
-        auto mc = std::make_shared<r_TiledDeviceMemoryController<NumericType, r_DeviceMemoryController, RowMajorTileDetails>>(i,j, 4);
+        auto mc = std::make_shared<TiledDeviceMemoryController<NumericType, DeviceMemoryController, RowMajorTileDetails>>(i, j, 4);
         return mc;
     } else if(type == 2) {
-        auto mc = std::make_shared<r_TiledDeviceMemoryController<NumericType, r_DeviceMemoryController, RowMajorTileDetails>>(
+        auto mc = std::make_shared<TiledDeviceMemoryController<NumericType, DeviceMemoryController, RowMajorTileDetails>>(
                 i, j, 8);
         return mc;
     } else if(type == 3) {
-        auto mc = std::make_shared<r_TiledDeviceMemoryController<NumericType, r_DeviceMemoryController, ColMajorTileDetails>>(
+        auto mc = std::make_shared<TiledDeviceMemoryController<NumericType, DeviceMemoryController, ColMajorTileDetails>>(
                 i, j, 4);
         return mc;
     } else if(type == 4) {
-        auto mc = std::make_shared<r_TiledDeviceMemoryController<NumericType, r_DeviceMemoryController, ColMajorTileDetails>>(
+        auto mc = std::make_shared<TiledDeviceMemoryController<NumericType, DeviceMemoryController, ColMajorTileDetails>>(
                 i, j, 8);
         return mc;
     }
@@ -526,20 +526,20 @@ TEST(TEST_SUITE_NAME, shouldPassComprehensiveTestSameTypes) {
 //                std::shared_ptr<DeviceAccessible<ThirdType>> dtmcTwo;
 //                std::shared_ptr<HostAccessible<FourthType>> testHmc;
 //
-//                truthHmc = std::make_shared<r_PinnedMemoryController<FirstType>>(i, j);
+//                truthHmc = std::make_shared<PinnedMemoryController<FirstType>>(i, j);
 //                NaNLA::Test::Utilities::populateHMCWithRandomValues(truthHmc);
 //
 //                NaNLA::Kernels::CudaDeviceGuard cdg(0);
-//                dtmcOne = std::make_shared<r_TiledDeviceMemoryController<SecondType, r_DeviceMemoryController, RowMajorTileDetails>>(
+//                dtmcOne = std::make_shared<TiledDeviceMemoryController<SecondType, DeviceMemoryController, RowMajorTileDetails>>(
 //                        i, j, 4);
 //                TransferStrategies::r_copyValues<FirstType, SecondType>(truthHmc, dtmcOne);
 //
 //                cdg.setCudaDevice(1);
-//                dtmcTwo = std::make_shared<r_TiledDeviceMemoryController<ThirdType , r_DeviceMemoryController, ColMajorTileDetails>>(
+//                dtmcTwo = std::make_shared<TiledDeviceMemoryController<ThirdType , DeviceMemoryController, ColMajorTileDetails>>(
 //                        i, j, 8);
 //                TransferStrategies::r_copyValues<SecondType, ThirdType>(dtmcOne, dtmcTwo);
 //
-//                testHmc = std::make_shared<r_HostCacheAlignedMemoryController<FourthType>>(i, j);
+//                testHmc = std::make_shared<HostCacheAlignedMemoryController<FourthType>>(i, j);
 //                TransferStrategies::r_copyValues<ThirdType, FourthType>(dtmcTwo, testHmc);
 //
 //                NaNLA::Test::Utilities::assertMemoryControllersAreEqual(truthHmc, testHmc);

@@ -6,7 +6,7 @@
 //
 
 #include <gtest/gtest.h>
-#include <r_PinnedMemoryController.h>
+#include <PinnedMemoryController.h>
 #include "../../../include/MatrixTestSuites/Utilities/TestUtilities.h"
 
 #define TEST_SUITE_NAME PinnedMemoryControllerTestSuite
@@ -14,7 +14,7 @@
 TEST(TEST_SUITE_NAME, ShouldBeAbleToConstructPinnedMemoryControllerAndAccessMemory) {
     using namespace NaNLA::MemoryControllers;
 
-    r_PinnedMemoryController<float> pmc(16, 128);
+    PinnedMemoryController<float> pmc(16, 128);
     for(uint64_t i = 0; i < pmc.getRows(); i++) {
         for(uint64_t j = 0; j < pmc.getCols(); j++) {
             pmc.at(i, j) = (float)i * (float)j;
@@ -31,7 +31,7 @@ TEST(TEST_SUITE_NAME, ShouldBeAbleToConstructPinnedMemoryControllerAndAccessMemo
 TEST(TEST_SUITE_NAME, ShouldBeAbleToCloneSelf) {
     using namespace NaNLA::MemoryControllers;
 
-    auto pmc = std::make_shared<r_PinnedMemoryController<float>>(256, 256);
+    auto pmc = std::make_shared<PinnedMemoryController<float>>(256, 256);
     for(uint64_t i = 0; i < pmc->getRows(); i++) {
         for(uint64_t j = 0; j < pmc->getCols(); j++) {
             pmc->at(i, j) = (float)i * (float)j;
@@ -45,10 +45,10 @@ TEST(TEST_SUITE_NAME, ShouldBeAbleToCloneSelf) {
 }
 
 TEST(TEST_SUITE_NAME, ShouldBeAbleToCopyConstruct) {
-    auto a = std::make_shared<NaNLA::MemoryControllers::r_PinnedMemoryController<int>>(100,100);
+    auto a = std::make_shared<NaNLA::MemoryControllers::PinnedMemoryController<int>>(100, 100);
     NaNLA::Test::Utilities::populateHMCWithRandomValues<int>(a);
 
-    auto b = std::make_shared<NaNLA::MemoryControllers::r_PinnedMemoryController<int>>(*a.get());
+    auto b = std::make_shared<NaNLA::MemoryControllers::PinnedMemoryController<int>>(*a.get());
 
     NaNLA::Test::Utilities::assertMemoryControllersAreEqual<int, int>(a,b);
 }

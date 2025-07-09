@@ -3,11 +3,11 @@
 //
 
 #include <gtest/gtest.h>
-#include <r_HostMemoryController.h>
+#include <HostMemoryController.h>
 #include <AbstractTileMemoryController.h>
-#include <r_TiledHostMemoryController.h>
-#include <r_Matrix.h>
-#include <r_HostMatrix.h>
+#include <TiledHostMemoryController.h>
+#include <Matrix.h>
+#include <HostMatrix.h>
 #include "../../../include/MatrixTestSuites/Utilities/TestUtilities.h"
 
 #define TEST_SUITE_NAME HostMemoryControllerTestSuite
@@ -15,7 +15,7 @@
 TEST(TEST_SUITE_NAME, ShouldBeAbleToConstructHostMemoryControllerAndAccessMemory) {
     using namespace NaNLA::MemoryControllers;
 
-    r_HostMemoryController<float> hmc(16,128);
+    HostMemoryController<float> hmc(16, 128);
     for(uint64_t i = 0; i < hmc.getRows(); i++) {
         for(uint64_t j = 0; j < hmc.getCols(); j++) {
             hmc.at(i,j) = (float)i * (float)j;
@@ -32,7 +32,7 @@ TEST(TEST_SUITE_NAME, ShouldBeAbleToConstructHostMemoryControllerAndAccessMemory
 TEST(TEST_SUITE_NAME, ShouldBeAbleToCloneSelf) {
     using namespace NaNLA::MemoryControllers;
 
-    auto hmc = std::make_shared<r_HostMemoryController<float>>(256,256);
+    auto hmc = std::make_shared<HostMemoryController<float>>(256, 256);
     for(uint64_t i = 0; i < hmc->getRows(); i++) {
         for(uint64_t j = 0; j < hmc->getCols(); j++) {
             hmc->at(i,j) = (float)i * (float)j;
@@ -46,10 +46,10 @@ TEST(TEST_SUITE_NAME, ShouldBeAbleToCloneSelf) {
 }
 
 TEST(TEST_SUITE_NAME, ShouldBeAbleToCopyConstruct) {
-    auto a = std::make_shared<NaNLA::MemoryControllers::r_HostMemoryController<int>>(100,100);
+    auto a = std::make_shared<NaNLA::MemoryControllers::HostMemoryController<int>>(100, 100);
     NaNLA::Test::Utilities::populateHMCWithRandomValues<int>(a);
 
-    auto b = std::make_shared<NaNLA::MemoryControllers::r_HostMemoryController<int>>(*a.get());
+    auto b = std::make_shared<NaNLA::MemoryControllers::HostMemoryController<int>>(*a.get());
 
     NaNLA::Test::Utilities::assertMemoryControllersAreEqual<int, int>(a,b);
 }

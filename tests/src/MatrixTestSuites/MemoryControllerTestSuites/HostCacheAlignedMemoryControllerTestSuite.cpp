@@ -3,7 +3,7 @@
 //
 
 #include <gtest/gtest.h>
-#include <r_HostCacheAlignedMemoryController.h>
+#include <HostCacheAlignedMemoryController.h>
 #include "../../../include/MatrixTestSuites/Utilities/TestUtilities.h"
 
 #define TEST_SUITE_NAME HostCacheAlignedMemoryControllerTestSuite
@@ -11,7 +11,7 @@
 TEST(TEST_SUITE_NAME, ShouldBeAbleToConstructHostCacheAlignedMemoryControllerAndAccessMemory) {
     using namespace NaNLA::MemoryControllers;
 
-    r_HostCacheAlignedMemoryController<float> hcamc(16, 128);
+    HostCacheAlignedMemoryController<float> hcamc(16, 128);
     for(uint64_t i = 0; i < hcamc.getRows(); i++) {
         for(uint64_t j = 0; j < hcamc.getCols(); j++) {
             hcamc.at(i, j) = (float)i * (float)j;
@@ -28,7 +28,7 @@ TEST(TEST_SUITE_NAME, ShouldBeAbleToConstructHostCacheAlignedMemoryControllerAnd
 TEST(TEST_SUITE_NAME, ShouldBeAbleToCloneSelf) {
     using namespace NaNLA::MemoryControllers;
 
-    auto hcamc = std::make_shared<r_HostCacheAlignedMemoryController<float>>(256, 256);
+    auto hcamc = std::make_shared<HostCacheAlignedMemoryController<float>>(256, 256);
     for(uint64_t i = 0; i < hcamc->getRows(); i++) {
         for(uint64_t j = 0; j < hcamc->getCols(); j++) {
             hcamc->at(i, j) = (float)i * (float)j;
@@ -42,10 +42,10 @@ TEST(TEST_SUITE_NAME, ShouldBeAbleToCloneSelf) {
 }
 
 TEST(TEST_SUITE_NAME, ShouldBeAbleToCopyConstruct) {
-    auto a = std::make_shared<NaNLA::MemoryControllers::r_HostCacheAlignedMemoryController<int>>(100,100);
+    auto a = std::make_shared<NaNLA::MemoryControllers::HostCacheAlignedMemoryController<int>>(100, 100);
     NaNLA::Test::Utilities::populateHMCWithRandomValues<int>(a);
 
-    auto b = std::make_shared<NaNLA::MemoryControllers::r_HostCacheAlignedMemoryController<int>>(*a.get());
+    auto b = std::make_shared<NaNLA::MemoryControllers::HostCacheAlignedMemoryController<int>>(*a.get());
 
     NaNLA::Test::Utilities::assertMemoryControllersAreEqual<int, int>(a,b);
 }

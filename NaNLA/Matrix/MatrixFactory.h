@@ -5,7 +5,7 @@
 #ifndef CUPYRE_MATRIXFACTORY_H
 #define CUPYRE_MATRIXFACTORY_H
 
-#include "r_Matrix.h"
+#include "Matrix.h"
 
 namespace NaNLA {
 

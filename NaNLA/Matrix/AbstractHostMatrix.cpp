@@ -8,7 +8,7 @@ namespace NaNLA::Internal {
     template<class NumericType, class ExplicitController>
     template<class... Args>
     AbstractHostMatrix<NumericType, ExplicitController>::AbstractHostMatrix(Args... args)
-    : r_AbstractMatrix<NumericType, ExplicitController>(args...) { ; }
+    : Matrix<NumericType, ExplicitController>(args...) { ; }
 
 
     template<class NumericType, class ExplicitController>

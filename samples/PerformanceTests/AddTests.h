@@ -7,15 +7,15 @@
 
 #include <chrono>
 #include <iostream>
-#include <r_HostMemoryController.h>
-#include <r_MemoryController.h>
+#include <HostMemoryController.h>
+#include <MemoryController.h>
 #include <MatrixFactory.h>
 
-#include <r_Matrix.h>
-#include <r_HostMatrix.h>
-#include <r_TiledHostMatrix.h>
-#include <r_DeviceMatrix.h>
-#include <r_TiledDeviceMatrix.h>
+#include <Matrix.h>
+#include <HostMatrix.h>
+#include <TiledHostMatrix.h>
+#include <DeviceMatrix.h>
+#include <TiledDeviceMatrix.h>
 #include <PerformanceTable/PerformanceTable.h>
 
 void testAdd();

@@ -6,20 +6,6 @@
 #include <Windows.h>
 
 namespace NaNLA::MatrixOperations {
-    template<class NumericType>
-    void addHostToHost(const MemoryControllers::HostMemoryController<NumericType> *lmc,
-                       const MemoryControllers::HostMemoryController<NumericType> *rmc,
-                       MemoryControllers::HostMemoryController<NumericType> &answer) {
-        if(lmc->getRows() == rmc->getRows()
-            && lmc->getCols() == rmc->getCols()) {
-            for(uint64_t ii = 0; ii < lmc->getRows(); ii++) {
-                for(uint64_t jj = 0; jj < lmc->getCols(); jj++) {
-                    answer.at(ii, jj) = lmc->get(ii, jj) + rmc->get(ii,jj);
-                }
-            }
-        }
-    }
-
     template<class aNumericType, class bNumericType, class cNumericType>
     static void r_hostAddHostToHost(const std::shared_ptr<MemoryControllers::HostAccessible<aNumericType>> lmc,
                                     const std::shared_ptr<MemoryControllers::HostAccessible<bNumericType>> rmc,
