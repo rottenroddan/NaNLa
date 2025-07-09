@@ -5,7 +5,7 @@
 #ifndef CUPYRE_TILEABLE_H
 #define CUPYRE_TILEABLE_H
 
-#include "r_MemoryController.h"
+#include "MemoryController.h"
 #include <cmath>
 
 namespace NaNLA {

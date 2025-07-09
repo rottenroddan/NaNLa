@@ -5,11 +5,11 @@
 #ifndef CUPYRE_MEMORYCONTROLLERHELPERS_H
 #define CUPYRE_MEMORYCONTROLLERHELPERS_H
 
-#include "../r_MemoryController.h"
-#include "../r_DeviceMemoryController.h"
-#include "../r_HostMemoryController.h"
-#include "../r_PinnedMemoryController.h"
-#include "../r_HostCacheAlignedMemoryController.h"
+#include "../MemoryController.h"
+#include "../DeviceMemoryController.h"
+#include "../HostMemoryController.h"
+#include "../PinnedMemoryController.h"
+#include "../HostCacheAlignedMemoryController.h"
 #include "../Tileable.h"
 
 #include <memory>

@@ -8,7 +8,7 @@
 #include <gtest/gtest.h>
 #include <memory>
 #include <random>
-#include <r_HostAccessible.h>
+#include <HostAccessible.h>
 
 namespace NaNLA::Test::Utilities {
     template<class NumericType>

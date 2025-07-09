@@ -3,8 +3,8 @@
 //
 
 #include <gtest/gtest.h>
-#include <r_Matrix.h>
-#include <r_HostMemoryController.h>
+#include <Matrix.h>
+#include <HostMemoryController.h>
 
 #define TEST_SUITE_NAME MatrixTestSuite
 

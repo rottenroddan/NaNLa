@@ -7,19 +7,13 @@
 
 #include "../Common/ThreadPool/ThreadPool.h"
 #include "MemoryController/HostMemoryController.h"
-#include "MemoryController/r_HostMemoryController.h"
 #include "MemoryController/Utils/MemoryControllerUtilities.h"
-#include "TransferStrategy/r_DefaultTransferStrategy.h"
+#include "TransferStrategy/DefaultTransferStrategy.h"
 
 #include "MatrixCudaOperations.cuh"
 
 namespace NaNLA::MatrixOperations {
     enum DeviceOperation {Cuda, Host};
-
-    template<class NumericType>
-    void addHostToHost(const MemoryControllers::HostMemoryController<NumericType>* lmc,
-                       const MemoryControllers::HostMemoryController<NumericType>* rmc,
-                       MemoryControllers::HostMemoryController<NumericType>& answer);
 
     template<class LhsMatrix, class RhsMatrix, class ResultMatrix>
     static void hostAddMatrices(LhsMatrix lhs, RhsMatrix rhs, ResultMatrix resultMatrix);

@@ -7,7 +7,7 @@
 namespace NaNLA::Internal {
     template<class NumericType>
     constexpr auto isCastableToDeviceMemoryController(std::shared_ptr<MemoryControllers::MemoryController<NumericType>> memoryController) -> bool {
-        return dynamic_cast<MemoryControllers::r_DeviceMemoryController<NumericType>*>(memoryController.get()) != nullptr;
+        return dynamic_cast<MemoryControllers::DeviceMemoryController<NumericType>*>(memoryController.get()) != nullptr;
     }
 
     template<class NumericType>
@@ -17,17 +17,17 @@ namespace NaNLA::Internal {
 
     template<class NumericType>
     constexpr auto isCastableToHostMemoryController(std::shared_ptr<MemoryControllers::MemoryController<NumericType>> memoryController) -> bool {
-        return std::dynamic_pointer_cast<MemoryControllers::r_HostMemoryController<NumericType>>(memoryController) != nullptr;
+        return std::dynamic_pointer_cast<MemoryControllers::HostMemoryController<NumericType>>(memoryController) != nullptr;
     }
 
     template<class NumericType>
     constexpr auto isCastableToPinnedMemoryController(std::shared_ptr<MemoryControllers::MemoryController<NumericType>> memoryController) -> bool {
-        return std::dynamic_pointer_cast<MemoryControllers::r_PinnedMemoryController<NumericType>>(memoryController) != nullptr;
+        return std::dynamic_pointer_cast<MemoryControllers::PinnedMemoryController<NumericType>>(memoryController) != nullptr;
     }
 
     template<class NumericType>
     constexpr auto isCastableToHostCacheAlignedMemoryController(std::shared_ptr<MemoryControllers::MemoryController<NumericType>> memoryController) -> bool {
-        return std::dynamic_pointer_cast<MemoryControllers::r_HostCacheAlignedMemoryController<NumericType>>(memoryController) != nullptr;
+        return std::dynamic_pointer_cast<MemoryControllers::HostCacheAlignedMemoryController<NumericType>>(memoryController) != nullptr;
     }
 
     template<class NumericType>

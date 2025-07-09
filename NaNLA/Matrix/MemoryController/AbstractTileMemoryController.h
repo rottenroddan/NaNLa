@@ -5,7 +5,7 @@
 #ifndef CUPYRE_ABSTRACTTILEMEMORYCONTROLLER_H
 #define CUPYRE_ABSTRACTTILEMEMORYCONTROLLER_H
 
-#include "r_AbstractMemoryController.h"
+#include "AbstractMemoryController.h"
 #include "Tileable.h"
 
 namespace NaNLA::MemoryControllers {

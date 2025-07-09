@@ -1,31 +1,74 @@
 //
-// Created by Steven Roddan on 3/8/2024.
+// Created by Steven Roddan on 6/6/2024.
 //
 
-#ifndef CUPYRE_ABSTRACTMEMORYCONTROLLER_H
-#define CUPYRE_ABSTRACTMEMORYCONTROLLER_H
+#ifndef CUPYRE_R_ABSTRACTMEMORYCONTROLLER_H
+#define CUPYRE_R_ABSTRACTMEMORYCONTROLLER_H
+
+#include "MemoryController.h"
+#include <functional>
 
 namespace NaNLA::MemoryControllers {
-    template<class NumericType>
-    class AbstractMemoryController {
-    protected:
-        AbstractMemoryController() = default;
+    class GeneralResizer {
     public:
-        virtual NumericType *getMatrix() = 0;
+        static void resize(uint64_t rows, uint64_t cols, uint64_t &actualRows, uint64_t &actualCols, uint64_t &totalSize, uint64_t &actualTotalSize) {
+            actualRows = rows;
+            actualCols = cols;
+            totalSize = rows * cols;
+            actualTotalSize = totalSize;
+        }
+    };
 
-        [[nodiscard]]virtual uint64_t getRows() const = 0;
+    template<class NumericType>
+    class AbstractMemoryController : virtual public MemoryController<NumericType> {
+    protected:
+        uint64_t rows;
+        uint64_t cols;
+        uint64_t totalSize;
+        uint64_t actualRows;
+        uint64_t actualCols;
+        uint64_t actualTotalSize;
 
-        [[nodiscard]]virtual uint64_t getCols() const = 0;
+        //mutable std::unique_ptr<NumericType[], std::function<void(NumericType *)>> _matrix;
+        mutable std::shared_ptr<NumericType[]> _matrix;
 
-        [[nodiscard]]virtual uint64_t getTotalSize() const = 0;
+        std::function<NumericType*(size_t)> _allocator;
+        std::function<void(NumericType *)> _deallocator;
+        std::function<void(uint64_t, uint64_t, uint64_t &, uint64_t &, uint64_t &, uint64_t &)> _resizer;
 
-        [[nodiscard]]virtual uint64_t getActualRows() const = 0;
+        AbstractMemoryController(const AbstractMemoryController<NumericType>& other);
 
-        [[nodiscard]]virtual uint64_t getActualCols() const = 0;
+        AbstractMemoryController(const uint64_t rows,
+                                 const uint64_t cols,
+                                 std::function<NumericType*(size_t)> _allocator,
+                                 std::function<void(NumericType *)> _deallocator,
+                                 std::function<void(uint64_t, uint64_t, uint64_t &, uint64_t &, uint64_t &,
+                                                      uint64_t &)> resizer);
+    public:
+        NumericType* getMatrix() const override;
 
-        [[nodiscard]]virtual uint64_t getActualTotalSize() const = 0;
+        [[nodiscard]] auto getRows() const -> uint64_t override;
+
+        [[nodiscard]] auto getCols() const -> uint64_t override;
+
+        [[nodiscard]] auto getTotalSize() const -> uint64_t override;
+
+        [[nodiscard]] auto getActualRows() const -> uint64_t override;
+
+        [[nodiscard]] auto getActualCols() const -> uint64_t override;
+
+        [[nodiscard]] auto getActualTotalSize() const -> uint64_t override;
+
+        [[nodiscard]] auto getAllocator() const -> std::function<NumericType*(size_t)>;
+
+        [[nodiscard]] auto getDeallocator() const -> std::function<void(NumericType *)>;
+
+        [[nodiscard]] auto getResizer() const -> std::function<void(uint64_t, uint64_t, uint64_t &, uint64_t &, uint64_t &,
+                                                              uint64_t &)>;
 
         virtual ~AbstractMemoryController() = default;
     };
 }
-#endif //CUPYRE_ABSTRACTMEMORYCONTROLLER_H
+
+#include "AbstractMemoryController.cpp"
+#endif //CUPYRE_R_ABSTRACTMEMORYCONTROLLER_H

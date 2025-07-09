@@ -7,14 +7,14 @@
 
 #include <chrono>
 #include <iostream>
-#include <r_HostMemoryController.h>
-#include <r_MemoryController.h>
+#include <HostMemoryController.h>
+#include <MemoryController.h>
 
-#include <r_Matrix.h>
-#include <r_HostMatrix.h>
-#include <r_TiledHostMatrix.h>
-#include <r_DeviceMatrix.h>
-#include <r_TiledDeviceMatrix.h>
+#include <Matrix.h>
+#include <HostMatrix.h>
+#include <TiledHostMatrix.h>
+#include <DeviceMatrix.h>
+#include <TiledDeviceMatrix.h>
 
 static const uint64_t MAX_ITERATIONS = 100;
 

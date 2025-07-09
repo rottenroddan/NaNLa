@@ -6,13 +6,13 @@
 #include <ctime>
 #include <cublas_v2.h>
 #include <iostream>
-#include <r_HostMemoryController.h>
-#include <r_MemoryController.h>
-#include <r_Matrix.h>
-#include <r_HostMatrix.h>
-#include <r_TiledHostMatrix.h>
-#include <r_DeviceMatrix.h>
-#include <r_TiledDeviceMatrix.h>
+#include <HostMemoryController.h>
+#include <MemoryController.h>
+#include <Matrix.h>
+#include <HostMatrix.h>
+#include <TiledHostMatrix.h>
+#include <DeviceMatrix.h>
+#include <TiledDeviceMatrix.h>
 #include <PerformanceTable/PerformanceTable.h>
 
 void fillMatrix(__half *matrix, int n) {
@@ -175,9 +175,9 @@ void  testDot() {
 
     using DataType = int;
 
-    NaNLA::r_HostMatrix<DataType, r_HostMemoryController> hostA(m, n);
-    NaNLA::r_HostMatrix<DataType, r_HostMemoryController> hostB(n, p);
-    NaNLA::r_HostMatrix<DataType, r_HostMemoryController> hostC(m, p);
+    NaNLA::HostMatrix<DataType, HostMemoryController> hostA(m, n);
+    NaNLA::HostMatrix<DataType, HostMemoryController> hostB(n, p);
+    NaNLA::HostMatrix<DataType, HostMemoryController> hostC(m, p);
 
     populate(hostA, hostB);
 
@@ -188,12 +188,12 @@ void  testDot() {
     auto end = std::chrono::high_resolution_clock::now();
     PTable.add("Matrix Dot", "Host Matrix", std::chrono::duration_cast<std::chrono::microseconds>(end - begin));
 
-    NaNLA::r_TiledHostMatrix<DataType, r_TiledHostMemoryController,
-    r_HostCacheAlignedMemoryController, ColMajorTileDetails> thm(m, n, 128);
-    NaNLA::r_TiledHostMatrix<DataType, r_TiledHostMemoryController,
-    r_HostCacheAlignedMemoryController, ColMajorTileDetails> thn(n, p, 128);
-    NaNLA::r_TiledHostMatrix<DataType, r_TiledHostMemoryController,
-    r_HostCacheAlignedMemoryController, RowMajorTileDetails> tho(m, p, 128);
+    NaNLA::TiledHostMatrix<DataType, TiledHostMemoryController,
+    HostCacheAlignedMemoryController, ColMajorTileDetails> thm(m, n, 128);
+    NaNLA::TiledHostMatrix<DataType, TiledHostMemoryController,
+    HostCacheAlignedMemoryController, ColMajorTileDetails> thn(n, p, 128);
+    NaNLA::TiledHostMatrix<DataType, TiledHostMemoryController,
+    HostCacheAlignedMemoryController, RowMajorTileDetails> tho(m, p, 128);
 
     populate(thm,thn);
 
@@ -204,9 +204,9 @@ void  testDot() {
     end = std::chrono::high_resolution_clock::now();
     PTable.add("Matrix Dot", "Host Tiled Matrix", std::chrono::duration_cast<std::chrono::microseconds>(end - begin));
 
-    NaNLA::r_DeviceMatrix<DataType, r_DeviceMemoryController> dm(m, n);
-    NaNLA::r_DeviceMatrix<DataType, r_DeviceMemoryController> dn(n, p);
-    NaNLA::r_DeviceMatrix<DataType, r_DeviceMemoryController> dp(m, p);
+    NaNLA::DeviceMatrix<DataType, DeviceMemoryController> dm(m, n);
+    NaNLA::DeviceMatrix<DataType, DeviceMemoryController> dn(n, p);
+    NaNLA::DeviceMatrix<DataType, DeviceMemoryController> dp(m, p);
 
     hostA.copyTo(dm);
     hostB.copyTo(dn);
@@ -218,9 +218,9 @@ void  testDot() {
     end = std::chrono::high_resolution_clock::now();
     PTable.add("Matrix Dot", "Device Matrix", std::chrono::duration_cast<std::chrono::microseconds>(end - begin));
 
-    NaNLA::r_TiledDeviceMatrix<DataType, r_TiledDeviceMemoryController, r_DeviceMemoryController, ColMajorTileDetails> tdm(m, n, 128);
-    NaNLA::r_TiledDeviceMatrix<DataType, r_TiledDeviceMemoryController, r_DeviceMemoryController, RowMajorTileDetails> tdn(n, p, 128);
-    NaNLA::r_TiledDeviceMatrix<DataType, r_TiledDeviceMemoryController, r_DeviceMemoryController, RowMajorTileDetails> tdp(m, p, 128);
+    NaNLA::TiledDeviceMatrix<DataType, TiledDeviceMemoryController, DeviceMemoryController, ColMajorTileDetails> tdm(m, n, 128);
+    NaNLA::TiledDeviceMatrix<DataType, TiledDeviceMemoryController, DeviceMemoryController, RowMajorTileDetails> tdn(n, p, 128);
+    NaNLA::TiledDeviceMatrix<DataType, TiledDeviceMemoryController, DeviceMemoryController, RowMajorTileDetails> tdp(m, p, 128);
 
     hostA.copyTo(tdm);
     hostB.copyTo(tdn);
@@ -232,10 +232,10 @@ void  testDot() {
     end = std::chrono::high_resolution_clock::now();
     PTable.add("Matrix Dot", "Device Tiled Matrix", std::chrono::duration_cast<std::chrono::microseconds>(end - begin));
 
-    NaNLA::r_HostMatrix<DataType, r_HostMemoryController> hdm(m, p);
+    NaNLA::HostMatrix<DataType, HostMemoryController> hdm(m, p);
     dp.copyTo(hdm);
 
-    NaNLA::r_TiledHostMatrix<DataType, r_TiledHostMemoryController, r_HostMemoryController, RowMajorTileDetails> htdp(m, p, 4);
+    NaNLA::TiledHostMatrix<DataType, TiledHostMemoryController, HostMemoryController, RowMajorTileDetails> htdp(m, p, 4);
     tdp.copyTo(htdp);
 
     validate(hostC, htdp, m, n, p);

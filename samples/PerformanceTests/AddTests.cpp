@@ -13,7 +13,7 @@ void testAdd() {
     const uint64_t TOTAL_ITERATIONS = 100;
 
     // warm up.
-    NaNLA::r_DeviceMatrix<int, NaNLA::MemoryControllers::r_DeviceMemoryController> ddd(16,16);
+    NaNLA::DeviceMatrix<int, NaNLA::MemoryControllers::DeviceMemoryController> ddd(16, 16);
     ddd.add(ddd,ddd);
 
     const long* a = new long[size];
@@ -32,9 +32,9 @@ void testAdd() {
     delete[] a; delete[] b; delete[] c;
 
 
-    NaNLA::r_HostMatrix<float, NaNLA::MemoryControllers::r_HostMemoryController> cc(rows, cols);
-    NaNLA::r_HostMatrix<float, NaNLA::MemoryControllers::r_HostMemoryController> aa(rows, cols);
-    NaNLA::r_HostMatrix<float, NaNLA::MemoryControllers::r_HostMemoryController> bb(rows, cols);
+    NaNLA::HostMatrix<float, NaNLA::MemoryControllers::HostMemoryController> cc(rows, cols);
+    NaNLA::HostMatrix<float, NaNLA::MemoryControllers::HostMemoryController> aa(rows, cols);
+    NaNLA::HostMatrix<float, NaNLA::MemoryControllers::HostMemoryController> bb(rows, cols);
 
     begin = std::chrono::high_resolution_clock::now();
     for(uint64_t x = 0; x < TOTAL_ITERATIONS; x++) {
@@ -45,13 +45,13 @@ void testAdd() {
     PTable.add("Matrix Add", "Host Matrix", std::chrono::duration_cast<std::chrono::microseconds>(end - begin));
 
 
-    NaNLA::r_TiledHostMatrix<float,
-            NaNLA::MemoryControllers::r_TiledHostMemoryController,
-            NaNLA::MemoryControllers::r_HostCacheAlignedMemoryController,
+    NaNLA::TiledHostMatrix<float,
+            NaNLA::MemoryControllers::TiledHostMemoryController,
+            NaNLA::MemoryControllers::HostCacheAlignedMemoryController,
             NaNLA::MemoryControllers::RowMajorTileDetails> tm(rows,cols,16);
-    NaNLA::r_TiledHostMatrix<float,
-            NaNLA::MemoryControllers::r_TiledHostMemoryController,
-            NaNLA::MemoryControllers::r_HostCacheAlignedMemoryController,
+    NaNLA::TiledHostMatrix<float,
+            NaNLA::MemoryControllers::TiledHostMemoryController,
+            NaNLA::MemoryControllers::HostCacheAlignedMemoryController,
             NaNLA::MemoryControllers::ColMajorTileDetails> tn(rows,cols,16);
 
     begin = std::chrono::high_resolution_clock::now();
@@ -61,9 +61,9 @@ void testAdd() {
     end = std::chrono::high_resolution_clock::now();
     PTable.add("Matrix Add", "Tiled Matrix", std::chrono::duration_cast<std::chrono::microseconds>(end - begin));
 
-    NaNLA::r_DeviceMatrix<float, NaNLA::MemoryControllers::r_DeviceMemoryController> dM(rows, cols);
-    NaNLA::r_DeviceMatrix<float, NaNLA::MemoryControllers::r_DeviceMemoryController> dN(rows, cols);
-    NaNLA::r_DeviceMatrix<float, NaNLA::MemoryControllers::r_DeviceMemoryController> dO(rows, cols);
+    NaNLA::DeviceMatrix<float, NaNLA::MemoryControllers::DeviceMemoryController> dM(rows, cols);
+    NaNLA::DeviceMatrix<float, NaNLA::MemoryControllers::DeviceMemoryController> dN(rows, cols);
+    NaNLA::DeviceMatrix<float, NaNLA::MemoryControllers::DeviceMemoryController> dO(rows, cols);
 
     // prime the device
     dM.add(dN);
@@ -75,17 +75,17 @@ void testAdd() {
     end = std::chrono::high_resolution_clock::now();
     PTable.add("Matrix Add", "Device Matrix", std::chrono::duration_cast<std::chrono::microseconds>(end - begin));
 
-    NaNLA::r_TiledDeviceMatrix<float,
-            NaNLA::MemoryControllers::r_TiledDeviceMemoryController,
-            NaNLA::MemoryControllers::r_DeviceMemoryController,
+    NaNLA::TiledDeviceMatrix<float,
+            NaNLA::MemoryControllers::TiledDeviceMemoryController,
+            NaNLA::MemoryControllers::DeviceMemoryController,
             NaNLA::MemoryControllers::RowMajorTileDetails> dmt(rows, cols, 32);
-    NaNLA::r_TiledDeviceMatrix<float,
-            NaNLA::MemoryControllers::r_TiledDeviceMemoryController,
-            NaNLA::MemoryControllers::r_DeviceMemoryController,
+    NaNLA::TiledDeviceMatrix<float,
+            NaNLA::MemoryControllers::TiledDeviceMemoryController,
+            NaNLA::MemoryControllers::DeviceMemoryController,
             NaNLA::MemoryControllers::RowMajorTileDetails> dnt(rows, cols, 32);
-    NaNLA::r_TiledDeviceMatrix<float,
-            NaNLA::MemoryControllers::r_TiledDeviceMemoryController,
-            NaNLA::MemoryControllers::r_DeviceMemoryController,
+    NaNLA::TiledDeviceMatrix<float,
+            NaNLA::MemoryControllers::TiledDeviceMemoryController,
+            NaNLA::MemoryControllers::DeviceMemoryController,
             NaNLA::MemoryControllers::RowMajorTileDetails> dot(rows, cols, 32);
 
     begin = std::chrono::high_resolution_clock::now();

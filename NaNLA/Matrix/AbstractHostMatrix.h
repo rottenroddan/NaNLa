@@ -5,12 +5,12 @@
 #ifndef CUPYRE_ABSTRACTHOSTMATRIX_H
 #define CUPYRE_ABSTRACTHOSTMATRIX_H
 
-#include "r_Matrix.h"
+#include "Matrix.h"
 
 namespace NaNLA::Internal {
 
     template<class NumericType, class ExplicitController>
-    class AbstractHostMatrix : public r_AbstractMatrix<NumericType, ExplicitController> {
+    class AbstractHostMatrix : public Matrix<NumericType, ExplicitController> {
     protected:
         template<class... Args>
         AbstractHostMatrix(Args...);
