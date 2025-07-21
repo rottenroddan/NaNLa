@@ -4,3 +4,4 @@ project(samples VERSION 0.0.1 LANGUAGES CUDA CXX)
 
 add_subdirectory(PerformanceTests)
 add_subdirectory(MatrixDotNaNLaCublasValidation)
+add_subdirectory(SimpleNeuralNetwork)

@@ -3,7 +3,7 @@
 //
 
 #include <gtest/gtest.h>
-#include <HostCacheAlignedMemoryController.h>
+#include <NaNLA/Matrix/MemoryController/HostCacheAlignedMemoryController.h>
 #include "../../../include/MatrixTestSuites/Utilities/TestUtilities.h"
 
 #define TEST_SUITE_NAME HostCacheAlignedMemoryControllerTestSuite

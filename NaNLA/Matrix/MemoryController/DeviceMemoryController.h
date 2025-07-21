@@ -5,7 +5,7 @@
 #ifndef CUPYRE_R_DEVICEMEMORYCONTROLLER_H
 #define CUPYRE_R_DEVICEMEMORYCONTROLLER_H
 
-#include "../Common/CudaDeviceGuard/CudaDeviceGuard.h"
+#include "../../Common/CudaDeviceGuard/CudaDeviceGuard.h"
 #include "AbstractMemoryController.h"
 #include "DeviceAccessible.h"
 #include "../Allocator/DeviceAllocator.h"

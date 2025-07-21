@@ -62,7 +62,17 @@ namespace NaNLA {
                  TiledHostMatrix<rNumericType, rTiledController, rController, rTileDetails > resultMatrix) const;
     };
 
+    template<class NumericType>
+    using RowTiledHostMatrix = TiledHostMatrix<NumericType,
+            MemoryControllers::TiledHostMemoryController,
+            MemoryControllers::HostCacheAlignedMemoryController,
+            MemoryControllers::RowMajorTileDetails>;
 
+    template<class NumericType>
+    using ColTiledHostMatrix = TiledHostMatrix<NumericType,
+            MemoryControllers::TiledHostMemoryController,
+            MemoryControllers::HostCacheAlignedMemoryController,
+            MemoryControllers::ColMajorTileDetails>;
 } // NaNLA
 
 #include "TiledHostMatrix.cpp"

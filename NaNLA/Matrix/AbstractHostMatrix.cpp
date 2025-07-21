@@ -6,10 +6,8 @@
 
 namespace NaNLA::Internal {
     template<class NumericType, class ExplicitController>
-    template<class... Args>
-    AbstractHostMatrix<NumericType, ExplicitController>::AbstractHostMatrix(Args... args)
-    : Matrix<NumericType, ExplicitController>(args...) { ; }
-
+    AbstractHostMatrix<NumericType, ExplicitController>::AbstractHostMatrix(
+            const AbstractHostMatrix<NumericType, ExplicitController> &abstractHostMatrix) : Matrix<NumericType, ExplicitController>(abstractHostMatrix) { ; }
 
     template<class NumericType, class ExplicitController>
     __forceinline auto AbstractHostMatrix<NumericType, ExplicitController>::at(uint64_t i, uint64_t j) -> NumericType& {

@@ -23,6 +23,14 @@
 #  define DECLSPEC
 #endif
 
+#ifdef NANLA_SAFE_MODE
+#define NANLA_ASSERT(cond, msg) \
+        do { if (!(cond)) { std::cerr << (msg); std::abort(); } } while (0)
+#else
+#include <cassert>
+#define NANLA_ASSERT(cond, msg) assert((cond) && msg)
+#endif
+
 #define gpuErrchk(ans) { gpuAssert((ans), __FILE__, __LINE__); }
 inline void gpuAssert(cudaError_t code, const char *file, int line, bool abort=true)
 {

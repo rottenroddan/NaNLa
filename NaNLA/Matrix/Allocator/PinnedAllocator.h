@@ -6,7 +6,7 @@
 #define CUPYRE_PINNEDALLOCATOR_H
 
 #include <cuda_runtime.h>
-#include "../Common/Common.h"
+#include "../../Common/Common.h"
 
 namespace NaNLA::Allocator {
     class PinnedAllocator {

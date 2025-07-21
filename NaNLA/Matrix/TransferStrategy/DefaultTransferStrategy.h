@@ -7,9 +7,9 @@
 
 #include <memory>
 #include <string>
-#include "../Common/CudaDeviceGuard/CudaDeviceGuard.h"
+#include "../../Common/CudaDeviceGuard/CudaDeviceGuard.h"
 #include "DefaultTransferStrategyCudaKernels.cuh"
-#include "../Exception/InvalidDimensionError.h"
+#include "../../Exception/InvalidDimensionError.h"
 #include "../MemoryController/Utils/MemoryControllerUtilities.h"
 #include "../MemoryController/HostCacheAlignedMemoryController.h"
 
@@ -98,7 +98,7 @@ namespace NaNLA::MemoryControllers::TransferStrategies {
     static void r_copyDeviceToDeviceValues(std::shared_ptr<DeviceAccessible<SrcNumericType>> srcMC, std::shared_ptr<DeviceAccessible<DstNumericType>> dstMC);
 
     template<class SrcNumericType, class DstNumericType>
-    static void r_copyValues(std::shared_ptr<MemoryController<SrcNumericType>> srcMC, std::shared_ptr<MemoryController<DstNumericType>> dstMC);
+    static void copyValues(std::shared_ptr<MemoryController<SrcNumericType>> srcMC, std::shared_ptr<MemoryController<DstNumericType>> dstMC);
 }
 
 #include "DefaultTransferStrategy.cpp"

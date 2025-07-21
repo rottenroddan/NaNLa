@@ -6,7 +6,7 @@
 //
 
 #include <gtest/gtest.h>
-#include <PinnedMemoryController.h>
+#include <NaNLA/Matrix/MemoryController/PinnedMemoryController.h>
 #include "../../../include/MatrixTestSuites/Utilities/TestUtilities.h"
 
 #define TEST_SUITE_NAME PinnedMemoryControllerTestSuite

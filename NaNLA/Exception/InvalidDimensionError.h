@@ -5,7 +5,7 @@
 #ifndef CUPYRE_INVALIDDIMENSIONERROR_H
 #define CUPYRE_INVALIDDIMENSIONERROR_H
 
-#include "Common.h"
+#include "../Common/Common.h"
 #include <stdexcept>
 
 namespace NaNLa::Exceptions {

@@ -8,7 +8,25 @@
 #include <gtest/gtest.h>
 #include <memory>
 #include <random>
-#include <HostAccessible.h>
+#include <NaNLA/Matrix/MemoryController/HostAccessible.h>
+
+
+#define CUDA_CHECK(err) do { \
+    cudaError_t err_ = (err); \
+    if (err_ != cudaSuccess) { \
+        std::cerr << "CUDA error at " << __FILE__ << ":" << __LINE__ << ": " << cudaGetErrorString(err_) << std::endl; \
+        std::exit(EXIT_FAILURE); \
+    } \
+} while(0)
+
+#define CUBLAS_CHECK(err) do { \
+    cublasStatus_t stat_ = (err); \
+    if (stat_ != CUBLAS_STATUS_SUCCESS) { \
+        std::cerr << "cuBLAS error at " << __FILE__ << ":" << __LINE__ << ": " << stat_ << std::endl; \
+        std::exit(EXIT_FAILURE); \
+    } \
+} while(0)
+
 
 namespace NaNLA::Test::Utilities {
     template<class NumericType>
@@ -34,6 +52,17 @@ namespace NaNLA::Test::Utilities {
                 ASSERT_EQ(truth->get(i,j), (TruthNumericType)test->get(i,j));
             }
         }
+    }
+
+    template<class Matrix>
+    static void printMatrix(Matrix m) {
+        for(uint64_t i = 0; i < m.getRows(); i++) {
+            for(uint64_t j = 0; j < m.getCols(); j++) {
+                std::cout << m.get(i,j) << " ";
+            }
+            std::cout << "\n";
+        }
+        std::cout << std::endl; // flush
     }
 }
 

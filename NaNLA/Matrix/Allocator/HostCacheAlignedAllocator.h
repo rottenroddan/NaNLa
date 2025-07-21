@@ -5,7 +5,7 @@
 #ifndef CUPYRE_HOSTCACHEALIGNEDALLOCATOR_H
 #define CUPYRE_HOSTCACHEALIGNEDALLOCATOR_H
 
-#include "../Common/Common.h"
+#include "../../Common/Common.h"
 #include <new>
 
 namespace NaNLA::Allocator {

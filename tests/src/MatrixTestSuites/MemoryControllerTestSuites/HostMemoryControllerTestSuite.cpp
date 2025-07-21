@@ -3,11 +3,11 @@
 //
 
 #include <gtest/gtest.h>
-#include <HostMemoryController.h>
-#include <AbstractTileMemoryController.h>
-#include <TiledHostMemoryController.h>
-#include <Matrix.h>
-#include <HostMatrix.h>
+#include <NaNLA/Matrix/MemoryController/HostMemoryController.h>
+#include <NaNLA/Matrix/MemoryController/AbstractTileMemoryController.h>
+#include <NaNLA/Matrix/MemoryController/TiledHostMemoryController.h>
+#include <NaNLA/Matrix/Matrix.h>
+#include <NaNLA/Matrix/HostMatrix.h>
 #include "../../../include/MatrixTestSuites/Utilities/TestUtilities.h"
 
 #define TEST_SUITE_NAME HostMemoryControllerTestSuite

@@ -17,7 +17,15 @@ namespace NaNLA {
             ExplicitController controller;
         public:
             template<class... Args>
-            explicit Matrix(Args...);
+            requires (
+            !std::conjunction_v<
+                    std::is_same<Matrix<NumericType, ExplicitController>, std::decay_t<Args>>...
+            > &&
+            std::is_constructible_v<ExplicitController, Args...>
+            )
+            explicit Matrix(Args&&... args) : controller(args...) {  }
+
+            Matrix(const Matrix& matrix);
 
             auto getRows() const -> uint64_t ;
             auto getCols() const -> uint64_t;

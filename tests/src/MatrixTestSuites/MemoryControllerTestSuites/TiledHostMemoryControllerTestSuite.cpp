@@ -10,8 +10,8 @@
 //
 
 #include <gtest/gtest.h>
-#include <HostCacheAlignedMemoryController.h>
-#include <TiledHostMemoryController.h>
+#include <NaNLA/Matrix/MemoryController/HostCacheAlignedMemoryController.h>
+#include <NaNLA/Matrix/MemoryController/TiledHostMemoryController.h>
 #include "../../../include/MatrixTestSuites/Utilities/TestUtilities.h"
 
 using namespace NaNLA::MemoryControllers;

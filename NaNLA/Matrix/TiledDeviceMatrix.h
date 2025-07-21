@@ -57,10 +57,21 @@ namespace NaNLA {
                 template<class, template<class> class,template<class> class> class RhsTiledController,
                 template<class> class RhsController,
                 template<class> class RhsTileDetails>
-        void cudaDot(const TiledDeviceMatrix<RhsNumericType, RhsTiledController, RhsController, RhsTileDetails > rhs,
-                     TiledDeviceMatrix<rNumericType, rTiledController, rController, rTileDetails > rMatrix) const;
+        void cudaDot(const TiledDeviceMatrix<RhsNumericType, RhsTiledController, RhsController, RhsTileDetails >& rhs,
+                     TiledDeviceMatrix<rNumericType, rTiledController, rController, rTileDetails >& rMatrix) const;
     };
 
+    template<class NumericType>
+    using RowTiledDeviceMatrix = TiledDeviceMatrix<NumericType,
+            MemoryControllers::TiledDeviceMemoryController,
+            MemoryControllers::DeviceMemoryController,
+            MemoryControllers::RowMajorTileDetails>;
+
+    template<class NumericType>
+    using ColTiledDeviceMatrix = TiledDeviceMatrix<NumericType,
+            MemoryControllers::TiledDeviceMemoryController,
+            MemoryControllers::DeviceMemoryController,
+            MemoryControllers::ColMajorTileDetails>;
 } // NaNLA
 
 #include "TiledDeviceMatrix.cpp"

@@ -1,5 +1,7 @@
 find_package(CUDAToolkit REQUIRED)
 
+set(NANLA_TARGET NaNLA)
+
 add_library(${PROJECT_NAME} SHARED
 #        ${NANLA_SOURCE_DIR}/Common/CommonKernel.cu
 #        ${NANLA_SOURCE_DIR}/Matrix/TransferStrategy/DefaultTransferStrategyCudaKernels.cu
@@ -35,15 +37,24 @@ target_compile_definitions(${PROJECT_NAME}
 
 target_sources(${PROJECT_NAME}
         PRIVATE
-        ${NANLA_SOURCE_DIR}/Common/Common.cpp
-        ${NANLA_SOURCE_DIR}/Common/ThreadPool/ThreadPool.cpp
-        ${NANLA_SOURCE_DIR}/Common/CudaDeviceGuard/CudaDeviceGuard.cpp
-        ${NANLA_SOURCE_DIR}/Common/PerformanceTable/PerformanceTable.cpp
-        ${NANLA_SOURCE_DIR}/Exception/InvalidDimensionError.cpp
-        ${NANLA_SOURCE_DIR}/Common/CommonKernel.cu
-        ${NANLA_SOURCE_DIR}/Matrix/TransferStrategy/DefaultTransferStrategyCudaKernels.cu
-        ${NANLA_SOURCE_DIR}/Matrix/MatrixOperations/MatrixCudaOperations.cu
-        ${NANLA_SOURCE_DIR}/Matrix/empty.cpp)
+#        ${NANLA_SOURCE_DIR}/Common/Common.cpp
+#        ${NANLA_SOURCE_DIR}/Common/ThreadPool/ThreadPool.cpp
+#        ${NANLA_SOURCE_DIR}/Common/CudaDeviceGuard/CudaDeviceGuard.cpp
+#        ${NANLA_SOURCE_DIR}/Common/PerformanceTable/PerformanceTable.cpp
+#        ${NANLA_SOURCE_DIR}/Exception/InvalidDimensionError.cpp
+#        ${NANLA_SOURCE_DIR}/Common/CommonKernel.cu
+#        ${NANLA_SOURCE_DIR}/Matrix/TransferStrategy/DefaultTransferStrategyCudaKernels.cu
+#        ${NANLA_SOURCE_DIR}/Matrix/MatrixOperations/MatrixCudaOperations.cu
+#        ${NANLA_SOURCE_DIR}/Matrix/empty.cpp)
+        ${NANLA_SOURCE_DIR}/NaNLA/Common/Common.cpp
+        ${NANLA_SOURCE_DIR}/NaNLA/Common/ThreadPool/ThreadPool.cpp
+        ${NANLA_SOURCE_DIR}/NaNLA/Common/CudaDeviceGuard/CudaDeviceGuard.cpp
+        ${NANLA_SOURCE_DIR}/NaNLA/Common/PerformanceTable/PerformanceTable.cpp
+        ${NANLA_SOURCE_DIR}/NaNLA/Exception/InvalidDimensionError.cpp
+        ${NANLA_SOURCE_DIR}/NaNLA/Common/CommonKernel.cu
+        ${NANLA_SOURCE_DIR}/NaNLA/Matrix/TransferStrategy/DefaultTransferStrategyCudaKernels.cu
+        ${NANLA_SOURCE_DIR}/NaNLA/Matrix/MatrixOperations/MatrixCudaOperations.cu
+        ${NANLA_SOURCE_DIR}/NaNLA/Matrix/empty.cpp)
 
 set(NANLA_DLL_PATH ${CMAKE_BINARY_DIR}/${PROJECT_NAME}/${PROJECT_NAME}.dll)
 set(NANLA_DLL_PATH ${CMAKE_BINARY_DIR}/${PROJECT_NAME}/${PROJECT_NAME}.dll PARENT_SCOPE)
@@ -65,12 +76,14 @@ endforeach()
 
 target_include_directories(NaNLA
         PUBLIC
-        ${NANLA_SOURCE_DIR}/Common
-        ${NANLA_SOURCE_DIR}/Exception
-        ${NANLA_SOURCE_DIR}/Matrix/
-        ${NANLA_SOURCE_DIR}/Matrix/Allocator
-        ${NANLA_SOURCE_DIR}/Matrix/MemoryBlock
-        ${NANLA_SOURCE_DIR}/Matrix/MemoryController
-        ${NANLA_SOURCE_DIR}/Matrix/Padding
-        ${NANLA_SOURCE_DIR}/Matrix/MemoryTransferHandler
-        ${NANLA_SOURCE_DIR}/Matrix/TransferStrategy)
+        ${NANLA_SOURCE_DIR}
+#        ${NANLA_SOURCE_DIR}/Common
+#        ${NANLA_SOURCE_DIR}/Exception
+#        ${NANLA_SOURCE_DIR}/Matrix/
+#        ${NANLA_SOURCE_DIR}/Matrix/Allocator
+#        ${NANLA_SOURCE_DIR}/Matrix/MemoryBlock
+#        ${NANLA_SOURCE_DIR}/Matrix/MemoryController
+#        ${NANLA_SOURCE_DIR}/Matrix/Padding
+#        ${NANLA_SOURCE_DIR}/Matrix/MemoryTransferHandler
+#        ${NANLA_SOURCE_DIR}/Matrix/TransferStrategy
+)

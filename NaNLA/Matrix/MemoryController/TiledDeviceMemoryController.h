@@ -8,7 +8,7 @@
 #include "DeviceAccessible.h"
 #include "Tileable.h"
 #include "AbstractTileMemoryController.h"
-#include "../Common/CudaDeviceGuard/CudaDeviceGuard.h"
+#include "../../Common/CudaDeviceGuard/CudaDeviceGuard.h"
 
 namespace NaNLA::MemoryControllers {
 

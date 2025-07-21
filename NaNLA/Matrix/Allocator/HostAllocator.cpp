@@ -17,6 +17,7 @@ namespace NaNLA::Allocator {
     template<typename NumericType>
     void HostAllocator::deallocate(NumericType* _ptr) {
         delete[] _ptr;
+        _ptr = nullptr;
     }
 }
 

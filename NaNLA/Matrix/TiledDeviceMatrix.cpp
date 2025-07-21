@@ -114,8 +114,8 @@ template<class rNumericType,
         template<class> class RhsController,
         template<class> class RhsTileDetails>
 void TiledDeviceMatrix<NumericType, TiledController, Controller, TileDetails>::cudaDot(
-        const TiledDeviceMatrix<RhsNumericType, RhsTiledController, RhsController, RhsTileDetails > rhs,
-        TiledDeviceMatrix<rNumericType, rTiledController, rController, rTileDetails > rMatrix) const {
+        const TiledDeviceMatrix<RhsNumericType, RhsTiledController, RhsController, RhsTileDetails>& rhs,
+        TiledDeviceMatrix<rNumericType, rTiledController, rController, rTileDetails>& rMatrix) const {
     if constexpr (std::is_same_v<TileDetails<NumericType>, NaNLA::MemoryControllers::RowMajorTileDetails<NumericType>>
             && std::is_same_v<RhsTileDetails<RhsNumericType>, NaNLA::MemoryControllers::ColMajorTileDetails<RhsNumericType>>
             && std::is_same_v<rTileDetails<rNumericType>, NaNLA::MemoryControllers::RowMajorTileDetails<rNumericType>>) {

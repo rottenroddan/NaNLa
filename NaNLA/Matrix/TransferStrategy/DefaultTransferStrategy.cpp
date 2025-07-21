@@ -883,7 +883,7 @@ namespace NaNLA::MemoryControllers::TransferStrategies {
 
 
     template<class SrcNumericType, class DstNumericType>
-    static void r_copyValues(std::shared_ptr<MemoryController<SrcNumericType>> srcMC, std::shared_ptr<MemoryController<DstNumericType>> dstMC) {
+    static void copyValues(std::shared_ptr<MemoryController<SrcNumericType>> srcMC, std::shared_ptr<MemoryController<DstNumericType>> dstMC) {
         if(!NaNLA::Internal::isSameDimensions<SrcNumericType, DstNumericType>(srcMC, dstMC)) {
             throw NaNLa::Exceptions::InvalidDimensionError("Invalid Dimension size. [" +
             std::to_string(srcMC->getRows()) + ", " +

@@ -3,8 +3,8 @@
 //
 
 #include <gtest/gtest.h>
-#include <Common.h>
-#include <CudaDeviceGuard/CudaDeviceGuard.h>
+#include <NaNLA/Common/Common.h>
+#include <NaNLA/Common/CudaDeviceGuard/CudaDeviceGuard.h>
 
 
 TEST(CudaDeviceGuardTestSuite, shouldResetCudaDeviceToOriginalDeviceAfterDestructorIsCalled) {

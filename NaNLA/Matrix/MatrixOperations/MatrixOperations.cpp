@@ -3,9 +3,16 @@
 //
 
 #include "MatrixOperations.h"
-#include <Windows.h>
+
 
 namespace NaNLA::MatrixOperations {
+    template<class LhsMatrix, class RhsMatrix, class ResultMatrix>
+    static void assertDotDims(LhsMatrix& lhs, RhsMatrix& rhs, ResultMatrix& result) {
+        NANLA_ASSERT((lhs.getRows() == result.getRows() &&
+                rhs.getCols() == result.getCols()), " Matrix Dimension mismatch for Dot Product between Result Matrix and LHS*RHS");
+        NANLA_ASSERT((lhs.getCols() == rhs.getRows()), " Matrix Dimension mismatch for Dot Product LHS and RHS");
+    }
+
     template<class aNumericType, class bNumericType, class cNumericType>
     static void r_hostAddHostToHost(const std::shared_ptr<MemoryControllers::HostAccessible<aNumericType>> lmc,
                                     const std::shared_ptr<MemoryControllers::HostAccessible<bNumericType>> rmc,
@@ -50,7 +57,7 @@ namespace NaNLA::MatrixOperations {
         r_hostAddHostToHost(lhs, rhs, result);
 
         if(answer != result)
-            MemoryControllers::TransferStrategies::r_copyValues(std::dynamic_pointer_cast<MemoryControllers::MemoryController<cNumericType>>(result),
+            MemoryControllers::TransferStrategies::copyValues(std::dynamic_pointer_cast<MemoryControllers::MemoryController<cNumericType>>(result),
                                                                 std::dynamic_pointer_cast<MemoryControllers::MemoryController<cNumericType>>(answer));
     }
 
@@ -81,7 +88,7 @@ namespace NaNLA::MatrixOperations {
 //        r_cudaAddDeviceToDevice(lhs, rhs, result);
 //
 //        if(answer != result)
-//            MemoryControllers::TransferStrategies::r_copyValues(std::dynamic_pointer_cast<MemoryControllers::MemoryController<cNumericType>>(result),
+//            MemoryControllers::TransferStrategies::copyValues(std::dynamic_pointer_cast<MemoryControllers::MemoryController<cNumericType>>(result),
 //                                                                std::dynamic_pointer_cast<MemoryControllers::MemoryController<cNumericType>>(answer));
     }
 
@@ -161,6 +168,8 @@ namespace NaNLA::MatrixOperations {
 
     template<class LhsMatrix, class RhsMatrix, class ResultMatrix>
     void hostMatrixMultiply(LhsMatrix lhs, RhsMatrix rhs, ResultMatrix resultMatrix) {
+        assertDotDims(lhs, rhs, resultMatrix);
+
         uint64_t totalThreads = (std::thread::hardware_concurrency() < lhs.getRows()) ? std::thread::hardware_concurrency() : lhs.getRows();
         NaNLA::Common::ThreadPool threadPool(totalThreads);
 
@@ -173,7 +182,7 @@ namespace NaNLA::MatrixOperations {
         std::vector<std::future<void>> futures;
 
         // zero it
-        memset(resultMatrix.getMatrix(), 0, sizeof(resultMatrix.getActualTotalSize() * sizeof(typename ResultMatrix::DataType)));
+        memset(resultMatrix.getMatrix(), 0, resultMatrix.getActualTotalSize() * sizeof(typename ResultMatrix::DataType));
 
         for(uint64_t t = 0; t < totalThreads; t++) {
             if (diff) {
@@ -184,8 +193,8 @@ namespace NaNLA::MatrixOperations {
             futures.emplace_back(threadPool.queue([&lhs, &rhs, &resultMatrix](uint64_t beginRow, uint64_t finalRow) {
                 for (uint64_t i = beginRow; i < finalRow; i++) {
                     for (uint64_t j = 0; j < rhs.getCols(); j++) {
-                        typename ResultMatrix::DataType sum = 0;
-                        for (uint64_t k = 0; k < rhs.getRows(); k++) {
+                        auto sum = typename ResultMatrix::DataType(0);
+                        for (uint64_t k = 0; k < lhs.getCols(); k++) {
                             sum += lhs.get(i, k) * rhs.get(k, j);
                         }
                         resultMatrix.at(i, j) = sum;
@@ -204,6 +213,8 @@ namespace NaNLA::MatrixOperations {
 
     template<class LhsMatrix, class RhsMatrix, class ResultMatrix>
     void hostTiledMatrixMultiply(LhsMatrix lhs, RhsMatrix rhs, ResultMatrix resultMatrix) {
+        assertDotDims(lhs, rhs, resultMatrix);
+
         uint64_t totalThreads = std::thread::hardware_concurrency();
         NaNLA::Common::ThreadPool threadPool(totalThreads);
         std::vector<std::future<void>> futures;
@@ -219,7 +230,7 @@ namespace NaNLA::MatrixOperations {
         const uint64_t blockSize = tileSize * tileSize;
         const uint64_t dimTileIncr = lhs.getTileCols() * blockSize;
 
-        memset(_result, 0, sizeof(resultMatrix.getActualTotalSize() * sizeof(typename ResultMatrix::DataType)));
+        memset(_result, 0, resultMatrix.getActualTotalSize() * sizeof(typename ResultMatrix::DataType));
 
         uint64_t resultBlockOffset = 0;
         for(uint64_t rowBlockOffset = 0; rowBlockOffset < lhsSize; rowBlockOffset += dimTileIncr) {
@@ -250,12 +261,24 @@ namespace NaNLA::MatrixOperations {
         for(const auto& future : futures) {
             future.wait();
         }
+    }
 
+    template<class Matrix>
+    Matrix hostTranspose(const Matrix a) {
+        Matrix t(a.getCols(), a.getRows());
+        for(uint64_t i = 0; i < a.getRows(); i++) {
+            for(uint64_t j = 0; j < a.getCols(); j++) {
+                t.at(j,i) = a.get(i,j);
+            }
+        }
 
+        return t;
     }
 
     template<class LhsMatrix, class RhsMatrix, class ResultMatrix>
-    void cudaMatrixMultiply(LhsMatrix lhs, RhsMatrix rhs, ResultMatrix result) {
+    void cudaMatrixMultiply(LhsMatrix& lhs, RhsMatrix& rhs, ResultMatrix& result) {
+        assertDotDims(lhs, rhs, result);
+
         auto* _lhs = lhs.getMatrix();
         auto* _rhs = rhs.getMatrix();
         auto* _result = result.getMatrix();
@@ -271,7 +294,9 @@ namespace NaNLA::MatrixOperations {
     }
 
     template<class LhsMatrix, class RhsMatrix, class ResultMatrix>
-    void cudaMatrixMultiplyTiled(LhsMatrix lhs, RhsMatrix rhs, ResultMatrix result) {
+    void cudaMatrixMultiplyTiled(LhsMatrix& lhs, RhsMatrix& rhs, ResultMatrix& result) {
+        assertDotDims(lhs, rhs, result);
+
         auto* _lhs = lhs.getMatrix();
         auto* _rhs = rhs.getMatrix();
         auto* _result = result.getMatrix();
@@ -289,7 +314,9 @@ namespace NaNLA::MatrixOperations {
     }
 
     template<class LhsMatrix, class RhsMatrix, class ResultMatrix>
-    void cudaMatrixMultiplyTiledColRowRow(LhsMatrix lhs, RhsMatrix rhs, ResultMatrix result) {
+    void cudaMatrixMultiplyTiledColRowRow(LhsMatrix& lhs, RhsMatrix& rhs, ResultMatrix& result) {
+        assertDotDims(lhs, rhs, result);
+
         auto* _lhs = lhs.getMatrix();
         auto* _rhs = rhs.getMatrix();
         auto* _result = result.getMatrix();

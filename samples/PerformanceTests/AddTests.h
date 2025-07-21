@@ -7,16 +7,16 @@
 
 #include <chrono>
 #include <iostream>
-#include <HostMemoryController.h>
-#include <MemoryController.h>
-#include <MatrixFactory.h>
+#include <NaNLA/Matrix/MemoryController/HostMemoryController.h>
+#include <NaNLA/Matrix/MemoryController/MemoryController.h>
+#include <NaNLA/Matrix/MatrixFactory.h>
 
-#include <Matrix.h>
-#include <HostMatrix.h>
-#include <TiledHostMatrix.h>
-#include <DeviceMatrix.h>
-#include <TiledDeviceMatrix.h>
-#include <PerformanceTable/PerformanceTable.h>
+#include <NaNLA/Matrix/Matrix.h>
+#include <NaNLA/Matrix/HostMatrix.h>
+#include <NaNLA/Matrix/TiledHostMatrix.h>
+#include <NaNLA/Matrix/DeviceMatrix.h>
+#include <NaNLA/Matrix/TiledDeviceMatrix.h>
+#include <NaNLA/Common/PerformanceTable/PerformanceTable.h>
 
 void testAdd();
 

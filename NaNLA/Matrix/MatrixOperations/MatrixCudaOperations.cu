@@ -814,22 +814,11 @@ namespace NaNLA::Internal::Kernels {
                                                            uint64_t rhsRows, uint64_t rhsCols,
                                                            uint64_t resultRows, uint64_t resultCols,
                                                            uint64_t tileSize, uint64_t tilesAlongSharedDim) {
-        constexpr uint64_t T_X = 16;
-        constexpr uint64_t T_Y = 16;
-
-        constexpr uint64_t W_Y_FRAG_SIZE = 64;
-        constexpr uint64_t W_X_FRAG_SIZE = 32;
-        constexpr uint64_t W_K_ITERATIONS = 8;
-
-        constexpr uint64_t SM_X_SIZE = 8;
-        constexpr uint64_t SM_Y_SIZE = 128;
-
         constexpr uint64_t TB_X_DIM = 128;
         constexpr uint64_t TB_Y_DIM = 128;
 
         uint64_t xTiles = resultCols / TB_X_DIM;
         uint64_t yTiles = resultRows / TB_Y_DIM;
-
 
         dim3 threads(16,16,1);
 
@@ -839,17 +828,15 @@ namespace NaNLA::Internal::Kernels {
         int numSMs;
         cudaDeviceGetAttribute(&numSMs, cudaDevAttrMultiProcessorCount, 0);
 
-
-
         uint64_t totalThreadBlocks = cTilesX * cTilesY < numSMs ? cTilesX * cTilesY : numSMs;
         uint64_t tilesPerThreadBlock = std::ceil(((double)cTilesX * (double)cTilesY) / (double)totalThreadBlocks);
 
         dim3 grid(1, totalThreadBlocks);
 
-        std::cout << "Total Number of SMs: " << numSMs << std::endl;
-        std::cout << "Grid X Size: " << grid.x << std::endl;
-        std::cout << "Grid Y Size: " << grid.y << std::endl;
-        std::cout << "Tiles Per TB: " << tilesPerThreadBlock << std::endl;
+//        std::cout << "Total Number of SMs: " << numSMs << std::endl;
+//        std::cout << "Grid X Size: " << grid.x << std::endl;
+//        std::cout << "Grid Y Size: " << grid.y << std::endl;
+//        std::cout << "Tiles Per TB: " << tilesPerThreadBlock << std::endl;
 
         cudaTiledDotV3<LhsNumericType, RhsNumericType, 128><<<grid, threads>>>(_lhs, _rhs, _result, lhsRows, lhsCols, xTiles, yTiles, tilesPerThreadBlock);
     }

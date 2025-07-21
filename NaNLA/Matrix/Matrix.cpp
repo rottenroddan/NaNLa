@@ -6,10 +6,8 @@
 
 namespace NaNLA {
     template<class NumericType, class ExplicitController>
-    template<class... Args>
-    Internal::Matrix<NumericType, ExplicitController>::Matrix(Args... args) : controller(args...) {
-
-    }
+    Internal::Matrix<NumericType, ExplicitController>::Matrix(const Matrix<NumericType, ExplicitController> &matrix)
+        : controller(matrix.controller) { ; }
 
     template<class NumericType, class ExplicitController>
     auto Internal::Matrix<NumericType, ExplicitController>::getRows() const -> uint64_t {
@@ -58,6 +56,6 @@ namespace NaNLA {
                                                                                       [](MemoryControllers::MemoryController<NumericType>*){;});
         std::shared_ptr<NaNLA::MemoryControllers::MemoryController<CopyNumericType>> _dst(dstMatrix.getController(),
                                                                                           [](MemoryControllers::MemoryController<CopyNumericType>*){;});
-        NaNLA::MemoryControllers::TransferStrategies::r_copyValues(_src, _dst);
+        NaNLA::MemoryControllers::TransferStrategies::copyValues(_src, _dst);
     }
 }

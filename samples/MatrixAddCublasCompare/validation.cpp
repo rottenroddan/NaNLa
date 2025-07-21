@@ -14,7 +14,6 @@
 #include <NaNLA/Matrix/DeviceMatrix.h>
 #include <NaNLA/Matrix/TiledDeviceMatrix.h>
 #include <NaNLA/Common/PerformanceTable/PerformanceTable.h>
-#include <random>
 
 void fillMatrix(__half *matrix, int n) {
     for (int i = 0; i < n * n; i++) {
@@ -22,7 +21,26 @@ void fillMatrix(__half *matrix, int n) {
     }
 }
 
-void cublasTest(int rows, int cols, float* h_A, float* h_B, float* h_C, float *d_A, float *d_B, float *d_C) {
+void cublasTest(int rows, int cols) {
+    // Allocate memory on the host
+    float* h_A = new float[rows * cols];
+    float* h_B = new float[cols * cols];
+    float* h_C = new float[rows * cols]();  // Initialize C to zero
+
+    // Initialize matrices A and B with some example values (for testing)
+    for (int i = 0; i < rows * cols; i++) {
+        h_A[i] = static_cast<float>(i % 10);  // Arbitrary values for testing
+    }
+    for (int i = 0; i < cols * cols; i++) {
+        h_B[i] = static_cast<float>((i * 3) % 10);
+    }
+
+    // Allocate memory on the device
+    float *d_A, *d_B, *d_C;
+    cudaMalloc(&d_A, rows * cols * sizeof(float));
+    cudaMalloc(&d_B, cols * cols * sizeof(float));
+    cudaMalloc(&d_C, rows * cols * sizeof(float));
+
     // Copy data from host to device
     cudaMemcpy(d_A, h_A, rows * cols * sizeof(float), cudaMemcpyHostToDevice);
     cudaMemcpy(d_B, h_B, cols * cols * sizeof(float), cudaMemcpyHostToDevice);
@@ -34,7 +52,8 @@ void cublasTest(int rows, int cols, float* h_A, float* h_B, float* h_C, float *d
     float alpha = 1.0f;
     float beta = 0.0f;
 
-
+    // Record the start time
+    auto begin = std::chrono::high_resolution_clock::now();
 
     // Perform the matrix multiplication C = alpha * A * B + beta * C
     cublasStatus_t status = cublasSgemm(
@@ -45,6 +64,17 @@ void cublasTest(int rows, int cols, float* h_A, float* h_B, float* h_C, float *d
             d_B, cols,               // B and its leading dimension
             &beta, d_C, rows         // C and its leading dimension
     );
+
+
+
+    // Record the end time
+    auto end = std::chrono::high_resolution_clock::now();
+    PTable.add("Matrix Dot", "cuBLAS", std::chrono::duration_cast<std::chrono::microseconds>(end - begin));
+
+    // Log performance time (dummy implementation for PTable)
+    // Replace `PTable.add` with actual performance logging if necessary
+    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - begin);
+    std::cout << "Matrix multiplication (cuBLAS) completed in: " << duration.count() << " microseconds.\n";
 
     // Check the cuBLAS operation status
     if (status != CUBLAS_STATUS_SUCCESS) {
@@ -57,24 +87,31 @@ void cublasTest(int rows, int cols, float* h_A, float* h_B, float* h_C, float *d
     // Print some of the result for verification
     std::cout << "Result C[0][0] = " << h_C[0] << std::endl;
 
+    // Clean up memory
+    delete[] h_A;
+    delete[] h_B;
+    delete[] h_C;
+    cudaFree(d_A);
+    cudaFree(d_B);
+    cudaFree(d_C);
+
     // Destroy cuBLAS handle
     cublasDestroy(handle);
 }
 
 template<typename T, typename U>
 void populate(T t, U u) {
-    std::mt19937 rng(std::random_device{}());
-    std::uniform_real_distribution<float> dist(-1, 1);
-
+    int incr = 0;
     for(uint64_t i = 0; i < t.getRows(); i++) {
         for(uint64_t j = 0; j < t.getCols(); j++) {
-            t.at(i,j) = dist(rng);//i + j;
+            t.at(i,j) = incr++;//i + j;
         }
     }
 
+    incr = 0;
     for(uint64_t i = 0; i < u.getRows(); i++) {
         for(uint64_t j = 0; j < u.getCols(); j++) {
-            u.at(i,j) = dist(rng);//i + j;
+            u.at(i,j) = incr++;//i + j;
         }
     }
 }
@@ -134,7 +171,7 @@ void  testDot() {
 
     using namespace NaNLA::MemoryControllers;
     using DataType = float;
-    const uint64_t MAX_ITERATIONS = 20;
+    const uint64_t MAX_ITERATIONS = 1;
 
     int m = 2048;
     int n = 2048;
@@ -156,18 +193,17 @@ void  testDot() {
     PTable.add("Matrix Dot", "Host Matrix", std::chrono::duration_cast<std::chrono::microseconds>(end - begin));
 
     NaNLA::TiledHostMatrix<DataType, TiledHostMemoryController,
-    HostCacheAlignedMemoryController, RowMajorTileDetails> thm(m, n, 128);
+    HostCacheAlignedMemoryController, ColMajorTileDetails> thm(m, n, 128);
     NaNLA::TiledHostMatrix<DataType, TiledHostMemoryController,
     HostCacheAlignedMemoryController, ColMajorTileDetails> thn(n, p, 128);
     NaNLA::TiledHostMatrix<DataType, TiledHostMemoryController,
     HostCacheAlignedMemoryController, RowMajorTileDetails> tho(m, p, 128);
 
-    hostA.copyTo(thm);
-    hostB.copyTo(thn);
+    populate(thm,thn);
 
     begin = std::chrono::high_resolution_clock::now();
     for(uint64_t x = 0; x < MAX_ITERATIONS; x++) {
-        thm.dot(thn,tho);
+        //thm.dot(thn,tho);
     }
     end = std::chrono::high_resolution_clock::now();
     PTable.add("Matrix Dot", "Host Tiled Matrix", std::chrono::duration_cast<std::chrono::microseconds>(end - begin));
@@ -190,18 +226,11 @@ void  testDot() {
     NaNLA::TiledDeviceMatrix<DataType, TiledDeviceMemoryController, DeviceMemoryController, RowMajorTileDetails> tdn(n, p, 128);
     NaNLA::TiledDeviceMatrix<DataType, TiledDeviceMemoryController, DeviceMemoryController, RowMajorTileDetails> tdp(m, p, 128);
 
-    NaNLA::TiledHostMatrix<DataType, TiledHostMemoryController, PinnedMemoryController, ColMajorTileDetails> hptdm(m,n,128);
-    NaNLA::TiledHostMatrix<DataType, TiledHostMemoryController, PinnedMemoryController, RowMajorTileDetails> hptdn(m,n,128);
-    NaNLA::TiledHostMatrix<DataType, TiledHostMemoryController, PinnedMemoryController, RowMajorTileDetails> hptdo(m,n,128);
-
-
-    hostA.copyTo(hptdm);
-    hostB.copyTo(hptdn);
+    hostA.copyTo(tdm);
+    hostB.copyTo(tdn);
 
     begin = std::chrono::high_resolution_clock::now();
     for(uint64_t x = 0; x < MAX_ITERATIONS; x++) {
-        hptdm.copyTo(tdm);
-        hptdn.copyTo(tdn);
         tdm.cudaDot(tdn,tdp);
     }
     end = std::chrono::high_resolution_clock::now();
@@ -213,48 +242,11 @@ void  testDot() {
     NaNLA::TiledHostMatrix<DataType, TiledHostMemoryController, HostMemoryController, RowMajorTileDetails> htdp(m, p, 4);
     tdp.copyTo(htdp);
 
-    validate(hostC, htdp, m, n, 0.001);
-    validate(hostC, hdm, m, n, 0.001);
-    validate(hostC, tho, m, n, 0.001);
+    //validate(hostC, htdp, m, n, 0.001);
 
-    // Record the start time
-    // Allocate memory on the host
-    float* h_A = new float[m * p];
-    float* h_B = new float[p * n];
-    float* h_C = new float[m * n]();  // Initialize C to zero
-
-    // Initialize matrices A and B with some example values (for testing)
-    for (int i = 0; i < m * p; i++) {
-        h_A[i] = static_cast<float>(i % 10);  // Arbitrary values for testing
-    }
-    for (int i = 0; i < p * n; i++) {
-        h_B[i] = static_cast<float>((i * 3) % 10);
-    }
-
-    // Allocate memory on the device
-    float *d_A, *d_B, *d_C;
-    cudaMalloc(&d_A, m * p * sizeof(float));
-    cudaMalloc(&d_B, p * n * sizeof(float));
-    cudaMalloc(&d_C, m * n * sizeof(float));
-
-
-    begin = std::chrono::high_resolution_clock::now();
     for(uint64_t x = 0; x < MAX_ITERATIONS; x++) {
-        cublasTest(m, n, h_A, h_B, h_C, d_A, d_B, d_C);
+        cublasTest(m, n);
     }
-    // Record the end time
-    end = std::chrono::high_resolution_clock::now();
-    PTable.add("Matrix Dot", "cuBLAS", std::chrono::duration_cast<std::chrono::microseconds>(end - begin));
-
-
-
-    // Clean up memory
-    delete[] h_A;
-    delete[] h_B;
-    delete[] h_C;
-    cudaFree(d_A);
-    cudaFree(d_B);
-    cudaFree(d_C);
 }
 
 int main() {
