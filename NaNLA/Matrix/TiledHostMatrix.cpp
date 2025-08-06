@@ -122,4 +122,26 @@ auto TiledHostMatrix<NumericType, TiledController, Controller, TileDetails>::get
             MatrixOperations::hostMatrixMultiply((*this), rhs, resultMatrix);
         }
     }
+
+    template<class NumericType, template<class, template<class> class,
+        template<class> class> class TiledController,
+        template<class> class Controller,
+        template<class> class TileDetails>
+    TiledHostMatrix <NumericType, TiledController, Controller, TileDetails>
+    TiledHostMatrix<NumericType, TiledController, Controller, TileDetails>::T() {
+        return MatrixOperations::hostTranspose((*this), getTileSize());
+    }
+
+    template<class NumericType, template<class, template<class> class,
+        template<class> class> class TiledController,
+        template<class> class Controller,
+        template<class> class TileDetails>
+    template<template<class> class rTileDetails>
+    TiledHostMatrix <NumericType, TiledController, Controller, rTileDetails>
+    TiledHostMatrix<NumericType, TiledController, Controller, TileDetails>::TFlipMajor() {
+        return MatrixOperations::hostTranspose
+                <TiledHostMatrix <NumericType, TiledController, Controller, TileDetails>,
+                        TiledHostMatrix <NumericType, TiledController, Controller, rTileDetails>>
+                    ((*this), getTileSize());
+    }
 }

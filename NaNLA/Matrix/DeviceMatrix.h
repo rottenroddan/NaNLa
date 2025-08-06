@@ -21,6 +21,8 @@ namespace NaNLA {
 
         template<template<class> class ResultController = Controller, class RhsNumericType, template<class> class RhsController>
         void cudaDot(const DeviceMatrix<RhsNumericType, RhsController> rhs, DeviceMatrix<typename std::common_type_t<NumericType, RhsNumericType>, ResultController> resultMatrix) const;
+
+        DeviceMatrix<NumericType, Controller> T() const;
     };
 
     template<class NumericType>

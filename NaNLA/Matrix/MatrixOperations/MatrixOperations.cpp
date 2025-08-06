@@ -5,6 +5,7 @@
 #include "MatrixOperations.h"
 
 
+
 namespace NaNLA::MatrixOperations {
     template<class LhsMatrix, class RhsMatrix, class ResultMatrix>
     static void assertDotDims(LhsMatrix& lhs, RhsMatrix& rhs, ResultMatrix& result) {
@@ -263,9 +264,9 @@ namespace NaNLA::MatrixOperations {
         }
     }
 
-    template<class Matrix>
-    Matrix hostTranspose(const Matrix a) {
-        Matrix t(a.getCols(), a.getRows());
+    template<class Matrix, class rMatrix = Matrix, typename... Args>
+    rMatrix hostTranspose(const Matrix a, Args... args) {
+        rMatrix t(a.getCols(), a.getRows(), args...);
         for(uint64_t i = 0; i < a.getRows(); i++) {
             for(uint64_t j = 0; j < a.getCols(); j++) {
                 t.at(j,i) = a.get(i,j);
@@ -333,4 +334,14 @@ namespace NaNLA::MatrixOperations {
         Internal::Kernels::launchTiledMatrixCudaDotProductColRowRow(_lhs, _rhs, _result, lhsRows, lhsCols, rhsRows, rhsCols, resultRows, resultCols, tileSize, colTiles);
     }
 
+    template<class LhsMatrix, class RMatrix, typename... Args>
+    RMatrix cudaMatrixTranspose(LhsMatrix a, Args... args) {
+        RMatrix t(a.getCols(), a.getRows(), args...);
+        Internal::Kernels::launchMatrixTranspose(a.getMatrix(), t.getMatrix(), a.getActualRows(), a.getActualCols());
+        return t;
+
+//        Internal::Kernels::launchMatrixTranspose(a.getMatrix(), t.getMatrix(), a.getCols(), a.getRows());
+//
+//        return t;
+    }
 }

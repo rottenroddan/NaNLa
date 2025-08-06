@@ -60,6 +60,11 @@ namespace NaNLA {
                 template<class> class RhsTileDetails>
         void dot(const TiledHostMatrix<RhsNumericType, RhsTiledController, RhsController, RhsTileDetails > rhs,
                  TiledHostMatrix<rNumericType, rTiledController, rController, rTileDetails > resultMatrix) const;
+
+        TiledHostMatrix<NumericType, TiledController, Controller, TileDetails> T();
+
+        template<template<class> class rTileDetails>
+        TiledHostMatrix<NumericType, TiledController, Controller, rTileDetails> TFlipMajor();
     };
 
     template<class NumericType>

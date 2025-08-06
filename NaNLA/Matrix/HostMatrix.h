@@ -13,8 +13,6 @@ namespace NaNLA {
     template<class NumericType, template<class> class Controller>
     class HostMatrix : public Internal::AbstractHostMatrix<NumericType, Controller<NumericType>> {
     public:
-        using DataType = NumericType;
-
         HostMatrix(uint64_t rows, uint64_t cols);
 
         HostMatrix(const HostMatrix& hostMatrix);

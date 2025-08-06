@@ -59,6 +59,9 @@ namespace NaNLA::Internal::Kernels {
             uint64_t resultRows, uint64_t resultCols,
             uint64_t tileSize, uint64_t tilesAlongSharedDim);
 
+    template<class NumericType>
+    DECLSPEC void launchMatrixTranspose(NumericType* _a, NumericType* _t, uint64_t rows, uint64_t cols);
+
 } // NaNLA
 
 #endif //CUPYRE_MATRIXCUDAOPERATIONS_CUH

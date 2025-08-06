@@ -7,6 +7,8 @@
 #include <gtest/gtest.h>
 #include <iostream>
 #include <NaNLA/Matrix/HostMatrix.h>
+#include <NaNLA/Matrix/TiledHostMatrix.h>
+#include <NaNLA/Matrix/DeviceMatrix.h>
 #include <random>
 #include <stdexcept>
 #include "../../include/MatrixTestSuites/Utilities/TestUtilities.h"
@@ -91,6 +93,29 @@ void validateMatrices(float *a1, T a2, uint64_t m, uint64_t n) {
     }
 }
 
+TEST(TEST_SUITE_NAME, ShouldTransposeDeviceMatrixAndValidateAgainstCUBLAS) {
+    for(uint64_t i = START_TRANSPOSE_DIM; i < MAX_TRANSPOSE_DIM; i++) {
+        for(uint64_t j = START_TRANSPOSE_DIM; j < MAX_TRANSPOSE_DIM; j++) {
+            auto a1 = new float[i*j];
+            NaNLA::HMatrix<float> aTemp(i,j);
+            NaNLA::DMatrix<float> a2(i,j);
+
+            populateMatrices(a1, aTemp, i, j);
+            aTemp.copyTo(a2);
+            auto b1 = transposeMatrixColMajor_cublas(a1, i, j);
+            auto b2 = a2.T();
+
+            NaNLA::HMatrix<float> bTemp(j,i);
+            b2.copyTo(bTemp);
+
+            ASSERT_NO_FATAL_FAILURE(validateMatrices(b1, bTemp, j, i));
+
+            delete[] a1;
+            delete[] b1;
+        }
+    }
+}
+
 TEST(TEST_SUITE_NAME, ShouldTransposeHostMatrixAndValidateAgainstCUBLAS) {
     for(uint64_t i = START_TRANSPOSE_DIM; i < MAX_TRANSPOSE_DIM; i++) {
         for(uint64_t j = START_TRANSPOSE_DIM; j < MAX_TRANSPOSE_DIM; j++) {
@@ -107,3 +132,55 @@ TEST(TEST_SUITE_NAME, ShouldTransposeHostMatrixAndValidateAgainstCUBLAS) {
         }
     }
 }
+
+TEST(TEST_SUITE_NAME, ShouldTransposeTiledHostMatrixAndValidateAgainstCUBLAS) {
+    for(uint64_t i = START_TRANSPOSE_DIM; i < MAX_TRANSPOSE_DIM; i++) {
+        for(uint64_t j = START_TRANSPOSE_DIM; j < MAX_TRANSPOSE_DIM; j++) {
+            auto a1 = new float[i*j];
+            NaNLA::RowTiledHostMatrix<float> a2(i,j, 16);
+
+            populateMatrices(a1, a2, i, j);
+            auto b1 = transposeMatrixColMajor_cublas(a1, i, j);
+            auto b2 = a2.T();
+            validateMatrices(b1, b2, j, i);
+
+            delete[] a1;
+            delete[] b1;
+        }
+    }
+}
+
+TEST(TEST_SUITE_NAME, ShouldTransposeTiledHostMatrixFromRowToColMajorAndValidateAgainstCUBLAS) {
+    for(uint64_t i = START_TRANSPOSE_DIM; i < MAX_TRANSPOSE_DIM; i++) {
+        for(uint64_t j = START_TRANSPOSE_DIM; j < MAX_TRANSPOSE_DIM; j++) {
+            auto a1 = new float[i*j];
+            NaNLA::RowTiledHostMatrix<float> a2(i,j, 16);
+
+            populateMatrices(a1, a2, i, j);
+            auto b1 = transposeMatrixColMajor_cublas(a1, i, j);
+            auto b2 = a2.TFlipMajor<NaNLA::MemoryControllers::ColMajorTileDetails>();
+            validateMatrices(b1, b2, j, i);
+
+            delete[] a1;
+            delete[] b1;
+        }
+    }
+}
+
+TEST(TEST_SUITE_NAME, ShouldTransposeTiledHostMatrixFromColToRowMajorAndValidateAgainstCUBLAS) {
+    for(uint64_t i = START_TRANSPOSE_DIM; i < MAX_TRANSPOSE_DIM; i++) {
+        for(uint64_t j = START_TRANSPOSE_DIM; j < MAX_TRANSPOSE_DIM; j++) {
+            auto a1 = new float[i*j];
+            NaNLA::ColTiledHostMatrix<float> a2(i,j, 16);
+
+            populateMatrices(a1, a2, i, j);
+            auto b1 = transposeMatrixColMajor_cublas(a1, i, j);
+            auto b2 = a2.TFlipMajor<NaNLA::MemoryControllers::RowMajorTileDetails>();
+            validateMatrices(b1, b2, j, i);
+
+            delete[] a1;
+            delete[] b1;
+        }
+    }
+}
+

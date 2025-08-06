@@ -16,6 +16,8 @@ namespace NaNLA {
         protected:
             ExplicitController controller;
         public:
+            using DataType = NumericType;
+
             template<class... Args>
             requires (
             !std::conjunction_v<
