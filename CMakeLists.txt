@@ -26,6 +26,7 @@ set(DIRS_TO_COPY_NANLA_DLL
         "${CMAKE_BINARY_DIR}/samples/MatrixDotNaNLaCublasValidation"
         "${CMAKE_BINARY_DIR}/samples/SimpleNeuralNetwork"
         "${CMAKE_BINARY_DIR}/tests"
+        CACHE INTERNAL "Directories to copy the DLL to"
 )
 
 set_target_properties(${PROJECT_NAME} PROPERTIES

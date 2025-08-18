@@ -7,6 +7,7 @@
 
 #include "AbstractDeviceMatrix.h"
 #include "MatrixOperations/MatrixOperations.h"
+#include "MemoryController/DeviceAccessible.h"
 
 namespace NaNLA {
 
@@ -59,6 +60,11 @@ namespace NaNLA {
                 template<class> class RhsTileDetails>
         void cudaDot(const TiledDeviceMatrix<RhsNumericType, RhsTiledController, RhsController, RhsTileDetails >& rhs,
                      TiledDeviceMatrix<rNumericType, rTiledController, rController, rTileDetails >& rMatrix) const;
+
+        TiledDeviceMatrix<NumericType, TiledController, Controller, TileDetails> T() const;
+
+        template<template<class> class rTileDetails>
+        TiledDeviceMatrix<NumericType, TiledController, Controller, rTileDetails> TFlipMajor();
     };
 
     template<class NumericType>

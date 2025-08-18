@@ -6,8 +6,12 @@
 #include <NaNLA/Common/Common.h>
 #include <NaNLA/Common/CudaDeviceGuard/CudaDeviceGuard.h>
 
+#include "../../../include/MatrixTestSuites/Utilities/TestUtilities.h"
+
 
 TEST(CudaDeviceGuardTestSuite, shouldResetCudaDeviceToOriginalDeviceAfterDestructorIsCalled) {
+    NANLA_SKIP_GTEST_IF_CUDA_DEVICE_NOT_GT_1;
+
     int currentCudaDevice = NaNLA::Common::getCurrentThreadCudaDevice();
     if(currentCudaDevice != 0) {
         NaNLA::Common::setThreadCudaDevice(0);

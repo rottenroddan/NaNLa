@@ -9,6 +9,7 @@
 #include <NaNLA/Matrix/HostMatrix.h>
 #include <NaNLA/Matrix/TiledHostMatrix.h>
 #include <NaNLA/Matrix/DeviceMatrix.h>
+#include <NaNLA/Matrix/TiledDeviceMatrix.h>
 #include <random>
 #include <stdexcept>
 #include "../../include/MatrixTestSuites/Utilities/TestUtilities.h"
@@ -59,6 +60,9 @@ float* transposeMatrixColMajor_cublas(const float* hostInput, int rows, int cols
     cudaMemcpy(hostOutput, d_output, size, cudaMemcpyDeviceToHost);
 
     // Clean up
+    cudaMemset(d_input, 0x0, rows * cols * sizeof(float));
+    cudaMemset(d_output, 0x0, rows * cols * sizeof(float));
+    cudaDeviceSynchronize();
     cudaFree(d_input);
     cudaFree(d_output);
     cublasDestroy(handle);
@@ -93,6 +97,56 @@ void validateMatrices(float *a1, T a2, uint64_t m, uint64_t n) {
     }
 }
 
+TEST(TEST_SUITE_NAME, ShouldTransposeRowTiledDeviceMatrixAndTransposeToColMajorAndValidateAgainstCUBLAS) {
+    for(uint64_t i = START_TRANSPOSE_DIM; i < MAX_TRANSPOSE_DIM; i++) {
+        for(uint64_t j = START_TRANSPOSE_DIM; j < MAX_TRANSPOSE_DIM; j++) {
+            auto a1 = new float[i*j];
+            NaNLA::RowTiledHostMatrix<float> aTemp(i,j, 128);
+            NaNLA::RowTiledDeviceMatrix<float> a2(i,j, 128);
+
+            populateMatrices(a1, aTemp, i, j);
+            aTemp.copyTo(a2);
+            auto b1 = transposeMatrixColMajor_cublas(a1, i, j);
+            auto b2 = a2.TFlipMajor<NaNLA::MemoryControllers::ColMajorTileDetails>();
+
+            NaNLA::HMatrix<float> bTemp(j,i);
+            b2.copyTo(bTemp);
+
+            ASSERT_NO_FATAL_FAILURE(validateMatrices(b1, bTemp, j, i));
+
+            memset(a1, 0x0, i * j * sizeof(float));
+            memset(b1, 0x0, i * j * sizeof(float));
+            delete[] a1;
+            delete[] b1;
+        }
+    }
+}
+
+TEST(TEST_SUITE_NAME, ShouldTransposeTiledDeviceMatrixAndValidateAgainstCUBLAS) {
+    for(uint64_t i = START_TRANSPOSE_DIM; i < MAX_TRANSPOSE_DIM; i++) {
+        for(uint64_t j = START_TRANSPOSE_DIM; j < MAX_TRANSPOSE_DIM; j++) {
+            auto a1 = new float[i*j];
+            NaNLA::RowTiledHostMatrix<float> aTemp(i,j, 128);
+            NaNLA::RowTiledDeviceMatrix<float> a2(i,j, 128);
+
+            populateMatrices(a1, aTemp, i, j);
+            aTemp.copyTo(a2);
+            auto b1 = transposeMatrixColMajor_cublas(a1, i, j);
+            auto b2 = a2.T();
+
+            NaNLA::HMatrix<float> bTemp(j,i);
+            b2.copyTo(bTemp);
+
+            ASSERT_NO_FATAL_FAILURE(validateMatrices(b1, bTemp, j, i));
+
+            memset(a1, 0x0, i * j * sizeof(float));
+            memset(b1, 0x0, i * j * sizeof(float));
+            delete[] a1;
+            delete[] b1;
+        }
+    }
+}
+
 TEST(TEST_SUITE_NAME, ShouldTransposeDeviceMatrixAndValidateAgainstCUBLAS) {
     for(uint64_t i = START_TRANSPOSE_DIM; i < MAX_TRANSPOSE_DIM; i++) {
         for(uint64_t j = START_TRANSPOSE_DIM; j < MAX_TRANSPOSE_DIM; j++) {
@@ -110,6 +164,8 @@ TEST(TEST_SUITE_NAME, ShouldTransposeDeviceMatrixAndValidateAgainstCUBLAS) {
 
             ASSERT_NO_FATAL_FAILURE(validateMatrices(b1, bTemp, j, i));
 
+            memset(a1, 0x0, i * j * sizeof(float));
+            memset(b1, 0x0, i * j * sizeof(float));
             delete[] a1;
             delete[] b1;
         }
@@ -127,6 +183,8 @@ TEST(TEST_SUITE_NAME, ShouldTransposeHostMatrixAndValidateAgainstCUBLAS) {
             auto b2 = a2.T();
             validateMatrices(b1, b2, j, i);
 
+            memset(a1, 0x0, i * j * sizeof(float));
+            memset(b1, 0x0, i * j * sizeof(float));
             delete[] a1;
             delete[] b1;
         }
@@ -144,6 +202,8 @@ TEST(TEST_SUITE_NAME, ShouldTransposeTiledHostMatrixAndValidateAgainstCUBLAS) {
             auto b2 = a2.T();
             validateMatrices(b1, b2, j, i);
 
+            memset(a1, 0x0, i * j * sizeof(float));
+            memset(b1, 0x0, i * j * sizeof(float));
             delete[] a1;
             delete[] b1;
         }
@@ -161,6 +221,8 @@ TEST(TEST_SUITE_NAME, ShouldTransposeTiledHostMatrixFromRowToColMajorAndValidate
             auto b2 = a2.TFlipMajor<NaNLA::MemoryControllers::ColMajorTileDetails>();
             validateMatrices(b1, b2, j, i);
 
+            memset(a1, 0x0, i * j * sizeof(float));
+            memset(b1, 0x0, i * j * sizeof(float));
             delete[] a1;
             delete[] b1;
         }
@@ -178,6 +240,8 @@ TEST(TEST_SUITE_NAME, ShouldTransposeTiledHostMatrixFromColToRowMajorAndValidate
             auto b2 = a2.TFlipMajor<NaNLA::MemoryControllers::RowMajorTileDetails>();
             validateMatrices(b1, b2, j, i);
 
+            memset(a1, 0x0, i * j * sizeof(float));
+            memset(b1, 0x0, i * j * sizeof(float));
             delete[] a1;
             delete[] b1;
         }

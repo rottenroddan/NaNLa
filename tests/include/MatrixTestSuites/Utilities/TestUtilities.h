@@ -10,6 +10,12 @@
 #include <random>
 #include <NaNLA/Matrix/MemoryController/HostAccessible.h>
 
+#define NANLA_SKIP_GTEST_IF_CUDA_DEVICE_NOT_GT_1 \
+    int deviceCount; \
+    cudaError_t error = cudaGetDeviceCount(&deviceCount); \
+    if(deviceCount <= 1) \
+        GTEST_SKIP();
+
 
 #define CUDA_CHECK(err) do { \
     cudaError_t err_ = (err); \

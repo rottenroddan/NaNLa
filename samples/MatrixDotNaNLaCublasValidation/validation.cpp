@@ -54,9 +54,6 @@ void cublasTest(int rows, int cols, float* h_A, float* h_B, float* h_C, float *d
     // Copy the result from device to host
     cudaMemcpy(h_C, d_C, rows * cols * sizeof(float), cudaMemcpyDeviceToHost);
 
-    // Print some of the result for verification
-    std::cout << "Result C[0][0] = " << h_C[0] << std::endl;
-
     // Destroy cuBLAS handle
     cublasDestroy(handle);
 }
@@ -134,7 +131,7 @@ void  testDot() {
 
     using namespace NaNLA::MemoryControllers;
     using DataType = float;
-    const uint64_t MAX_ITERATIONS = 20;
+    const uint64_t MAX_ITERATIONS = 100;
 
     int m = 2048;
     int n = 2048;
@@ -245,8 +242,6 @@ void  testDot() {
     // Record the end time
     end = std::chrono::high_resolution_clock::now();
     PTable.add("Matrix Dot", "cuBLAS", std::chrono::duration_cast<std::chrono::microseconds>(end - begin));
-
-
 
     // Clean up memory
     delete[] h_A;

@@ -101,33 +101,57 @@ namespace NaNLA {
         MatrixOperations::cudaAddTiledMatrices((*this), rhs, rMatrix);
     }
 
+    template<class NumericType, template<class, template<class> class,
+            template<class> class> class TiledController,
+            template<class> class Controller,
+            template<class> class TileDetails>
+    template<class rNumericType,
+            template<class, template<class> class,template<class> class> class rTiledController,
+            template<class> class rController,
+            template<class> class rTileDetails,
+            class RhsNumericType,
+            template<class, template<class> class,template<class> class> class RhsTiledController,
+            template<class> class RhsController,
+            template<class> class RhsTileDetails>
+    void TiledDeviceMatrix<NumericType, TiledController, Controller, TileDetails>::cudaDot(
+            const TiledDeviceMatrix<RhsNumericType, RhsTiledController, RhsController, RhsTileDetails>& rhs,
+            TiledDeviceMatrix<rNumericType, rTiledController, rController, rTileDetails>& rMatrix) const {
+        if constexpr (std::is_same_v<TileDetails<NumericType>, NaNLA::MemoryControllers::RowMajorTileDetails<NumericType>>
+                && std::is_same_v<RhsTileDetails<RhsNumericType>, NaNLA::MemoryControllers::ColMajorTileDetails<RhsNumericType>>
+                && std::is_same_v<rTileDetails<rNumericType>, NaNLA::MemoryControllers::RowMajorTileDetails<rNumericType>>) {
+            MatrixOperations::cudaMatrixMultiplyTiled((*this), rhs, rMatrix);
+        } else if constexpr (std::is_same_v<TileDetails<NumericType>, NaNLA::MemoryControllers::ColMajorTileDetails<NumericType>>
+                && std::is_same_v<RhsTileDetails<RhsNumericType>, NaNLA::MemoryControllers::RowMajorTileDetails<RhsNumericType>>
+        && std::is_same_v<rTileDetails<rNumericType>, NaNLA::MemoryControllers::RowMajorTileDetails<rNumericType>>) {
+            MatrixOperations::cudaMatrixMultiplyTiledColRowRow((*this), rhs, rMatrix);
+        } else {
+    //        std::cout << typeid(TileDetails<NumericType>).name() << std::endl;
+            []<bool flag = false>()
+            {static_assert(flag, "No definition for tile configurations.");}();
+        }
+    }
+
 template<class NumericType, template<class, template<class> class,
         template<class> class> class TiledController,
         template<class> class Controller,
         template<class> class TileDetails>
-template<class rNumericType,
-        template<class, template<class> class,template<class> class> class rTiledController,
-        template<class> class rController,
-        template<class> class rTileDetails,
-        class RhsNumericType,
-        template<class, template<class> class,template<class> class> class RhsTiledController,
-        template<class> class RhsController,
-        template<class> class RhsTileDetails>
-void TiledDeviceMatrix<NumericType, TiledController, Controller, TileDetails>::cudaDot(
-        const TiledDeviceMatrix<RhsNumericType, RhsTiledController, RhsController, RhsTileDetails>& rhs,
-        TiledDeviceMatrix<rNumericType, rTiledController, rController, rTileDetails>& rMatrix) const {
-    if constexpr (std::is_same_v<TileDetails<NumericType>, NaNLA::MemoryControllers::RowMajorTileDetails<NumericType>>
-            && std::is_same_v<RhsTileDetails<RhsNumericType>, NaNLA::MemoryControllers::ColMajorTileDetails<RhsNumericType>>
-            && std::is_same_v<rTileDetails<rNumericType>, NaNLA::MemoryControllers::RowMajorTileDetails<rNumericType>>) {
-        MatrixOperations::cudaMatrixMultiplyTiled((*this), rhs, rMatrix);
-    } else if constexpr (std::is_same_v<TileDetails<NumericType>, NaNLA::MemoryControllers::ColMajorTileDetails<NumericType>>
-            && std::is_same_v<RhsTileDetails<RhsNumericType>, NaNLA::MemoryControllers::RowMajorTileDetails<RhsNumericType>>
-    && std::is_same_v<rTileDetails<rNumericType>, NaNLA::MemoryControllers::RowMajorTileDetails<rNumericType>>) {
-        MatrixOperations::cudaMatrixMultiplyTiledColRowRow((*this), rhs, rMatrix);
-    } else {
-//        std::cout << typeid(TileDetails<NumericType>).name() << std::endl;
-        []<bool flag = false>()
-        {static_assert(flag, "No definition for tile configurations.");}();
-    }
+TiledDeviceMatrix<NumericType, TiledController, Controller, TileDetails> TiledDeviceMatrix<NumericType, TiledController, Controller, TileDetails>::T() const {
+    return MatrixOperations::cudaMatrixTranspose(*this, this->getTileSize());
 }
+
+    template<class NumericType, template<class, template<class> class,
+            template<class> class> class TiledController,
+            template<class> class Controller,
+            template<class> class TileDetails>
+    template<template<class> class rTileDetails>
+    TiledDeviceMatrix<NumericType, TiledController, Controller, rTileDetails>
+    TiledDeviceMatrix<NumericType, TiledController, Controller, TileDetails>::TFlipMajor() {
+        TiledDeviceMatrix<NumericType, TiledController, Controller, rTileDetails> rMatrix(this->getCols(), this->getRows(), this->getTileSize());
+//        MemoryControllers
+//            ::TransferStrategies
+//                ::r_copyDeviceToDeviceValues<NumericType>
+//                        (std::dynamic_pointer_cast<MemoryControllers::DeviceAccessible<NumericType>>(std::make_shared(this->getController())),
+//                            std::dynamic_pointer_cast<MemoryControllers::DeviceAccessible<NumericType>>(std::make_shared(rMatrix.getController())));
+        return rMatrix;
+    }
 } // NaNLA

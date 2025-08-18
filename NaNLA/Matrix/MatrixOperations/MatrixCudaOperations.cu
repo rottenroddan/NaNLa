@@ -842,20 +842,25 @@ namespace NaNLA::Internal::Kernels {
     }
 
     template<class NumericType>
-    __global__ void cudaMatrixTranspose(NumericType* _a, NumericType* _t, uint64_t rows, uint64_t cols) {
+    __global__ void cudaMatrixTranspose(NumericType* _a, NumericType* _t, uint64_t rows, uint64_t cols, uint64_t tileSize = 0) {
         extern __shared__ unsigned char _sMem[];
         NumericType* _sharedTile = reinterpret_cast<NumericType*>(_sMem);
 
-        unsigned int blockXDims = (cols + blockDim.x - 1) / blockDim.x;
+        unsigned int blockXIdx = blockIdx.x;
+        unsigned int blockYIdx = blockIdx.y;
 
-        unsigned int blockXIdx = blockIdx.x % blockXDims;
-        unsigned int blockYIdx = blockIdx.x / blockXDims;
+        unsigned int aYIdx;
+        unsigned int aXIdx;
 
-        unsigned int aYIdx = blockYIdx * blockDim.y + threadIdx.y;
-        unsigned int aXIdx = blockXIdx * blockDim.x + threadIdx.x;
+        unsigned int tYIdx;
+        unsigned int tXIdx;
 
-        unsigned int tYIdx = blockXIdx * blockDim.y + threadIdx.y;
-        unsigned int tXIdx = blockYIdx * blockDim.x + threadIdx.x;
+
+        aYIdx = _getIIndexWithThreadId(threadIdx.y);
+        aXIdx = _getJIndexWithThreadId(threadIdx.x);
+
+        tYIdx = _getJIndexWithThreadId(threadIdx.y);
+        tXIdx = _getIIndexWithThreadId(threadIdx.x);
 
         if(aYIdx < rows && aXIdx < cols) {
             unsigned int sIdx = threadIdx.y * blockDim.x + threadIdx.y * 1 + threadIdx.x;
@@ -873,21 +878,16 @@ namespace NaNLA::Internal::Kernels {
 
     template<class NumericType>
     DECLSPEC void launchMatrixTranspose(NumericType* _a, NumericType* _t, uint64_t totalRows, uint64_t totalCols) {
-        int numSMs, deviceId, sharedMemPerDevice;
+        int deviceId, sharedMemPerDevice;
         cudaGetDevice(&deviceId);
-        cudaDeviceGetAttribute(&numSMs, cudaDevAttrMultiProcessorCount, deviceId);
         cudaDeviceGetAttribute(&sharedMemPerDevice, cudaDevAttrMaxSharedMemoryPerBlock, deviceId);
         dim3 threadBlock(32,32);
 
-        const int xThreadDir = (totalCols + threadBlock.x - 1) / threadBlock.x;
-        const int yThreadDir = (totalRows + threadBlock.y - 1) / threadBlock.y;
-        const int totalThreadBlocks = xThreadDir * yThreadDir;
-
         // + threadBlock.x to avoid bank conflicts.
         const int sharedMemorySizePerThreadBlock = (threadBlock.x * threadBlock.y + threadBlock.x ) * sizeof(NumericType);
-        dim3 grid(totalThreadBlocks, 1);
+        dim3 grid = generate2dGridForLinearTimeAlgorithms(threadBlock, totalRows, totalCols);
 
-        cudaMatrixTranspose<<<grid,threadBlock,sharedMemorySizePerThreadBlock>>>(_a, _t, totalRows, totalCols);
+        cudaMatrixTranspose<NumericType><<<grid,threadBlock,sharedMemorySizePerThreadBlock>>>(_a, _t, totalRows, totalCols);
     }
 
     template<typename LhsNumericType, typename RhsNumericType>

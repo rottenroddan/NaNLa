@@ -68,7 +68,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES CUDA_ARCHITECTURES "75;86")
 
 foreach (dir ${DIRS_TO_COPY_NANLA_DLL})
     add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            COMMAND ${CMAKE_COMMAND} -E copy
             "${NANLA_DLL_PATH}"                        # Path to the DLL
             "${dir}" # Destination directory (executable folder)
     )

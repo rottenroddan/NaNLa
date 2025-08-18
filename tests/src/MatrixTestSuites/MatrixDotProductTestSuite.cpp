@@ -20,7 +20,7 @@ const uint64_t START_DIM = 128;
 const uint64_t MAX_DIM_SIZE = START_DIM + 32;
 
 const uint64_t CUDA_INCR_AMOUNT = 9; // for odd cols/rows
-const uint64_t CUDA_START_DIMS = 256;
+const uint64_t CUDA_START_DIMS = 1024;
 const uint64_t CUDA_MAX_DIM = CUDA_INCR_AMOUNT * 32 + CUDA_START_DIMS;
 
 const std::string EXPECTED_INVALID_A_AND_B_DIM_STR = "Matrix Dimension mismatch for Dot Product LHS and RHS";

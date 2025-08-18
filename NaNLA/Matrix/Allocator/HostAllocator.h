@@ -6,8 +6,9 @@
 #define CUPYRE_HOSTALLOCATOR_H
 
 #include "../../Common/Common.h"
-
 #include <malloc.h>
+#include <string.h>
+
 namespace NaNLA::Allocator {
     class HostAllocator {
     public:

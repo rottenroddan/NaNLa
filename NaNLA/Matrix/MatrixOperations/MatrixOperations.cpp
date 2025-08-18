@@ -339,9 +339,5 @@ namespace NaNLA::MatrixOperations {
         RMatrix t(a.getCols(), a.getRows(), args...);
         Internal::Kernels::launchMatrixTranspose(a.getMatrix(), t.getMatrix(), a.getActualRows(), a.getActualCols());
         return t;
-
-//        Internal::Kernels::launchMatrixTranspose(a.getMatrix(), t.getMatrix(), a.getCols(), a.getRows());
-//
-//        return t;
     }
 }
