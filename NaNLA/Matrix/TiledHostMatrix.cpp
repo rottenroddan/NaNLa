@@ -21,7 +21,7 @@ namespace NaNLA {
             template<class> class Controller,
             template<class> class TileDetails>
     auto TiledHostMatrix<NumericType, TiledController, Controller, TileDetails>::getTileSize() const -> uint64_t {
-        return this->controller.getTileSize();
+        return this->controller->getTileSize();
     }
 
     template<class NumericType, template<class, template<class> class,
@@ -29,7 +29,7 @@ namespace NaNLA {
             template<class> class Controller,
             template<class> class TileDetails>
     auto constexpr TiledHostMatrix<NumericType, TiledController, Controller, TileDetails>::getTileMajor() -> bool {
-        return this->controller.getTileMajor();
+        return this->controller->getTileMajor();
     }
 
 template<class NumericType, template<class, template<class> class,
@@ -37,7 +37,7 @@ template<class NumericType, template<class, template<class> class,
         template<class> class Controller,
         template<class> class TileDetails>
 auto TiledHostMatrix<NumericType, TiledController, Controller, TileDetails>::getTileRows() const -> uint64_t {
-    return this->controller.getTileRows();
+    return this->controller->getTileRows();
 }
 
 template<class NumericType, template<class, template<class> class,
@@ -45,7 +45,7 @@ template<class NumericType, template<class, template<class> class,
         template<class> class Controller,
         template<class> class TileDetails>
 auto TiledHostMatrix<NumericType, TiledController, Controller, TileDetails>::getTileCols() const -> uint64_t{
-    return this->controller.getTileCols();
+    return this->controller->getTileCols();
 }
 
 

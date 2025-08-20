@@ -70,13 +70,25 @@ namespace NaNLA {
     template<class NumericType>
     using RowTiledHostMatrix = TiledHostMatrix<NumericType,
             MemoryControllers::TiledHostMemoryController,
-            MemoryControllers::HostCacheAlignedMemoryController,
+            MemoryControllers::HostMemoryController,
             MemoryControllers::RowMajorTileDetails>;
 
     template<class NumericType>
     using ColTiledHostMatrix = TiledHostMatrix<NumericType,
             MemoryControllers::TiledHostMemoryController,
-            MemoryControllers::HostCacheAlignedMemoryController,
+            MemoryControllers::HostMemoryController,
+            MemoryControllers::ColMajorTileDetails>;
+
+    template<class NumericType>
+    using RowTiledHostPinnedMatrix = TiledHostMatrix<NumericType,
+            MemoryControllers::TiledHostMemoryController,
+            MemoryControllers::HostMemoryController,
+            MemoryControllers::RowMajorTileDetails>;
+
+    template<class NumericType>
+    using ColTiledHostPinnedMatrix = TiledHostMatrix<NumericType,
+            MemoryControllers::TiledHostMemoryController,
+            MemoryControllers::HostMemoryController,
             MemoryControllers::ColMajorTileDetails>;
 } // NaNLA
 

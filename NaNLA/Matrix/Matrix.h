@@ -14,7 +14,7 @@ namespace NaNLA {
         template<class NumericType, class ExplicitController>
         class Matrix {
         protected:
-            ExplicitController controller;
+            std::shared_ptr<ExplicitController> controller;
         public:
             using DataType = NumericType;
 
@@ -25,7 +25,7 @@ namespace NaNLA {
             > &&
             std::is_constructible_v<ExplicitController, Args...>
             )
-            explicit Matrix(Args&&... args) : controller(args...) {  }
+            explicit Matrix(Args&&... args) : controller(std::make_shared<ExplicitController>(std::forward<Args>(args)...)) {  }
 
             Matrix(const Matrix& matrix);
 
@@ -36,7 +36,7 @@ namespace NaNLA {
             auto getActualCols() const -> uint64_t;
             auto getActualTotalSize() const -> uint64_t;
             auto getMatrix() const -> NumericType*;
-            auto getController() -> NaNLA::MemoryControllers::MemoryController<NumericType>*;
+            auto getController() -> std::shared_ptr<NaNLA::MemoryControllers::MemoryController<NumericType>>;
 
             template<class CopyNumericType = NumericType, class DstMatrixType>
             void copyTo(DstMatrixType dstMatrix);
