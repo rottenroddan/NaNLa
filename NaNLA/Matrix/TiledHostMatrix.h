@@ -60,18 +60,35 @@ namespace NaNLA {
                 template<class> class RhsTileDetails>
         void dot(const TiledHostMatrix<RhsNumericType, RhsTiledController, RhsController, RhsTileDetails > rhs,
                  TiledHostMatrix<rNumericType, rTiledController, rController, rTileDetails > resultMatrix) const;
+
+        TiledHostMatrix<NumericType, TiledController, Controller, TileDetails> T();
+
+        template<template<class> class rTileDetails>
+        TiledHostMatrix<NumericType, TiledController, Controller, rTileDetails> TFlipMajor();
     };
 
     template<class NumericType>
     using RowTiledHostMatrix = TiledHostMatrix<NumericType,
             MemoryControllers::TiledHostMemoryController,
-            MemoryControllers::HostCacheAlignedMemoryController,
+            MemoryControllers::HostMemoryController,
             MemoryControllers::RowMajorTileDetails>;
 
     template<class NumericType>
     using ColTiledHostMatrix = TiledHostMatrix<NumericType,
             MemoryControllers::TiledHostMemoryController,
-            MemoryControllers::HostCacheAlignedMemoryController,
+            MemoryControllers::HostMemoryController,
+            MemoryControllers::ColMajorTileDetails>;
+
+    template<class NumericType>
+    using RowTiledHostPinnedMatrix = TiledHostMatrix<NumericType,
+            MemoryControllers::TiledHostMemoryController,
+            MemoryControllers::HostMemoryController,
+            MemoryControllers::RowMajorTileDetails>;
+
+    template<class NumericType>
+    using ColTiledHostPinnedMatrix = TiledHostMatrix<NumericType,
+            MemoryControllers::TiledHostMemoryController,
+            MemoryControllers::HostMemoryController,
             MemoryControllers::ColMajorTileDetails>;
 } // NaNLA
 

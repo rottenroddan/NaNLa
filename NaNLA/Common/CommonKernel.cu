@@ -13,9 +13,17 @@ namespace NaNLA::Internal::Kernels {
         return blockIdx.x * blockDim.x + threadIdx.x;
     }
 
+    __device__ unsigned int _getIIndexWithThreadId(int threadId) {
+        return blockIdx.y * blockDim.y + threadId;
+    }
+
+    __device__ unsigned int _getJIndexWithThreadId(int threadId) {
+        return blockIdx.x * blockDim.x + threadId;
+    }
+
+
     template<Kernels::KernelTileMajor TileMajor>
     __device__ unsigned long getTileIndex(unsigned long tileSize, unsigned long totalDimTiles, unsigned long actualColSize) {
-
         if constexpr (Kernels::KernelTileMajor::ROW == TileMajor) {
             unsigned int i = Internal::Kernels::_getIIndex();
             unsigned int j = Internal::Kernels::_getJIndex();
@@ -37,6 +45,8 @@ namespace NaNLA::Internal::Kernels {
                    + threadIdx.y * actualColSize + blockIdx.x * blockDim.x + threadIdx.x;
         }
     }
+
+
 }
 
 template __device__ unsigned long NaNLA::Internal::Kernels::getTileIndex<NaNLA::Internal::Kernels::KernelTileMajor::NONE>(unsigned long, unsigned long, unsigned long);

@@ -11,51 +11,49 @@ namespace NaNLA {
 
     template<class NumericType, class ExplicitController>
     auto Internal::Matrix<NumericType, ExplicitController>::getRows() const -> uint64_t {
-        return controller.getRows();
+        return this->controller->getRows();
     }
 
     template<class NumericType, class ExplicitController>
     auto Internal::Matrix<NumericType, ExplicitController>::getCols() const -> uint64_t {
-        return controller.getCols();
+        return this->controller->getCols();
     }
 
     template<class NumericType, class ExplicitController>
     auto Internal::Matrix<NumericType, ExplicitController>::getTotalSize() const -> uint64_t {
-        return controller.getTotalSize();
+        return this->controller->getTotalSize();
     }
 
     template<class NumericType, class ExplicitController>
     auto Internal::Matrix<NumericType, ExplicitController>::getActualRows() const -> uint64_t {
-        return controller.getActualRows();
+        return this->controller->getActualRows();
     }
 
     template<class NumericType, class ExplicitController>
     auto Internal::Matrix<NumericType, ExplicitController>::getActualCols() const -> uint64_t {
-        return controller.getActualCols();
+        return this->controller->getActualCols();
     }
 
     template<class NumericType, class ExplicitController>
     auto Internal::Matrix<NumericType, ExplicitController>::getActualTotalSize() const -> uint64_t {
-        return controller.getActualTotalSize();
+        return this->controller->getActualTotalSize();
     }
 
     template<class NumericType, class ExplicitController>
     auto Internal::Matrix<NumericType, ExplicitController>::getMatrix() const -> NumericType * {
-        return controller.getMatrix();
+        return this->controller->getMatrix();
     }
 
     template<class NumericType, class ExplicitController>
-    auto Internal::Matrix<NumericType, ExplicitController>::getController() -> NaNLA::MemoryControllers::MemoryController<NumericType>* {
-        return dynamic_cast<NaNLA::MemoryControllers::MemoryController<NumericType>*>(&this->controller);
+    auto Internal::Matrix<NumericType, ExplicitController>::getController() -> std::shared_ptr<NaNLA::MemoryControllers::MemoryController<NumericType>> {
+        return this->controller;
     }
 
     template<class NumericType, class ExplicitController>
     template<class CopyNumericType, class DstMatrixType>
     void Internal::Matrix<NumericType, ExplicitController>::copyTo(DstMatrixType dstMatrix) {
-        std::shared_ptr<NaNLA::MemoryControllers::MemoryController<NumericType>> _src(this->getController(),
-                                                                                      [](MemoryControllers::MemoryController<NumericType>*){;});
-        std::shared_ptr<NaNLA::MemoryControllers::MemoryController<CopyNumericType>> _dst(dstMatrix.getController(),
-                                                                                          [](MemoryControllers::MemoryController<CopyNumericType>*){;});
+        auto _src = this->getController();
+        auto _dst = dstMatrix.getController();
         NaNLA::MemoryControllers::TransferStrategies::copyValues(_src, _dst);
     }
 }

@@ -841,6 +841,55 @@ namespace NaNLA::Internal::Kernels {
         cudaTiledDotV3<LhsNumericType, RhsNumericType, 128><<<grid, threads>>>(_lhs, _rhs, _result, lhsRows, lhsCols, xTiles, yTiles, tilesPerThreadBlock);
     }
 
+    template<class NumericType>
+    __global__ void cudaMatrixTranspose(NumericType* _a, NumericType* _t, uint64_t rows, uint64_t cols, uint64_t tileSize = 0) {
+        extern __shared__ unsigned char _sMem[];
+        NumericType* _sharedTile = reinterpret_cast<NumericType*>(_sMem);
+
+        unsigned int blockXIdx = blockIdx.x;
+        unsigned int blockYIdx = blockIdx.y;
+
+        unsigned int aYIdx;
+        unsigned int aXIdx;
+
+        unsigned int tYIdx;
+        unsigned int tXIdx;
+
+
+        aYIdx = _getIIndexWithThreadId(threadIdx.y);
+        aXIdx = _getJIndexWithThreadId(threadIdx.x);
+
+        tYIdx = _getJIndexWithThreadId(threadIdx.y);
+        tXIdx = _getIIndexWithThreadId(threadIdx.x);
+
+        if(aYIdx < rows && aXIdx < cols) {
+            unsigned int sIdx = threadIdx.y * blockDim.x + threadIdx.y * 1 + threadIdx.x;
+            _sharedTile[sIdx] = _a[aYIdx * cols + aXIdx];
+            //printf("[%d, %d] - %d -> %d : sIdx: %d\n", threadIdx.x, threadIdx.y, aXIdx, aYIdx, sIdx);
+        }
+
+        __syncthreads();
+        if(tXIdx < rows && tYIdx < cols) {
+            unsigned int sIdx = threadIdx.x * blockDim.x + threadIdx.x * 1 + threadIdx.y;
+            _t[tYIdx * rows + tXIdx] = _sharedTile[sIdx];
+        }
+
+    }
+
+    template<class NumericType>
+    DECLSPEC void launchMatrixTranspose(NumericType* _a, NumericType* _t, uint64_t totalRows, uint64_t totalCols) {
+        int deviceId, sharedMemPerDevice;
+        cudaGetDevice(&deviceId);
+        cudaDeviceGetAttribute(&sharedMemPerDevice, cudaDevAttrMaxSharedMemoryPerBlock, deviceId);
+        dim3 threadBlock(32,32);
+
+        // + threadBlock.x to avoid bank conflicts.
+        const int sharedMemorySizePerThreadBlock = (threadBlock.x * threadBlock.y + threadBlock.x ) * sizeof(NumericType);
+        dim3 grid = generate2dGridForLinearTimeAlgorithms(threadBlock, totalRows, totalCols);
+
+        cudaMatrixTranspose<NumericType><<<grid,threadBlock,sharedMemorySizePerThreadBlock>>>(_a, _t, totalRows, totalCols);
+    }
+
     template<typename LhsNumericType, typename RhsNumericType>
     void explicitelyInstantiateMatrixMultiply() {
         launchMatrixCudaMultiply<LhsNumericType, RhsNumericType>(nullptr, nullptr, nullptr, 0,0,0,0,0,0);
@@ -878,15 +927,23 @@ namespace NaNLA::Internal::Kernels {
         launchMatrixAdd<KernelTileMajor::COL, KernelTileMajor::COL, KernelTileMajor::COL, LhsNumericType, RhsNumericType>(nullptr, nullptr, nullptr, 0, 0, DimensionType::ONE_D_GRID_ONE_D_BLOCK, 0, 0, 0);
     }
 
+    template<typename Tuple, size_t I = 0>
+    void explicitlyInstantiateSingleTypeMatrixFunctions() {
+        if constexpr (I < std::tuple_size_v<Tuple>) {
+            launchMatrixTranspose<std::tuple_element_t<I, Tuple>>(nullptr, nullptr, 0, 0);
+            explicitlyInstantiateSingleTypeMatrixFunctions<Tuple, I + 1>();
+        }
+    }
+
     template<typename Tuple, size_t I = 0, size_t J = 0>
-    void explicitelyInstantiateTripleTypeMatrixFunctions() {
+    void explicitlyInstantiateTripleTypeMatrixFunctions() {
         if constexpr (I < std::tuple_size_v<Tuple>) {
             if constexpr (J < std::tuple_size_v<Tuple>) {
                 explicitInstantiateMatrixAdd<std::tuple_element_t<I, Tuple>, std::tuple_element_t<J, Tuple>>();
                 explicitelyInstantiateMatrixMultiply<std::tuple_element_t<I, Tuple>, std::tuple_element_t<J, Tuple>>();
-                explicitelyInstantiateTripleTypeMatrixFunctions<Tuple, I, J + 1>();
+                explicitlyInstantiateTripleTypeMatrixFunctions<Tuple, I, J + 1>();
             } else {
-                explicitelyInstantiateTripleTypeMatrixFunctions<Tuple, I + 1, 0>();
+                explicitlyInstantiateTripleTypeMatrixFunctions<Tuple, I + 1, 0>();
             }
         }
     }
@@ -897,10 +954,15 @@ namespace NaNLA::Internal::Kernels {
     using UnsignedNumericTypeTuple = std::tuple<uint32_t, uint16_t, uint8_t>;
 
 
-    template DECLSPEC void explicitelyInstantiateTripleTypeMatrixFunctions<FloatingPointNumericTypeTuple>();
-    template DECLSPEC void explicitelyInstantiateTripleTypeMatrixFunctions<CUDAFloatingPointNumericTypeTuple>();
-    template DECLSPEC void explicitelyInstantiateTripleTypeMatrixFunctions<SignedNumericTypeTuple>();
-    template DECLSPEC void explicitelyInstantiateTripleTypeMatrixFunctions<UnsignedNumericTypeTuple>();
+    template DECLSPEC void explicitlyInstantiateSingleTypeMatrixFunctions<FloatingPointNumericTypeTuple>();
+    template DECLSPEC void explicitlyInstantiateSingleTypeMatrixFunctions<CUDAFloatingPointNumericTypeTuple>();
+    template DECLSPEC void explicitlyInstantiateSingleTypeMatrixFunctions<SignedNumericTypeTuple>();
+    template DECLSPEC void explicitlyInstantiateSingleTypeMatrixFunctions<UnsignedNumericTypeTuple>();
+
+    template DECLSPEC void explicitlyInstantiateTripleTypeMatrixFunctions<FloatingPointNumericTypeTuple>();
+    template DECLSPEC void explicitlyInstantiateTripleTypeMatrixFunctions<CUDAFloatingPointNumericTypeTuple>();
+    template DECLSPEC void explicitlyInstantiateTripleTypeMatrixFunctions<SignedNumericTypeTuple>();
+    template DECLSPEC void explicitlyInstantiateTripleTypeMatrixFunctions<UnsignedNumericTypeTuple>();
 
 } // NaNLA
 

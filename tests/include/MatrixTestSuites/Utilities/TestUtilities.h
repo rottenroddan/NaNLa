@@ -10,6 +10,12 @@
 #include <random>
 #include <NaNLA/Matrix/MemoryController/HostAccessible.h>
 
+#define NANLA_SKIP_GTEST_IF_CUDA_DEVICE_NOT_GT_1 \
+    int deviceCount; \
+    cudaError_t error = cudaGetDeviceCount(&deviceCount); \
+    if(deviceCount <= 1) \
+        GTEST_SKIP();
+
 
 #define CUDA_CHECK(err) do { \
     cudaError_t err_ = (err); \
@@ -56,6 +62,7 @@ namespace NaNLA::Test::Utilities {
 
     template<class Matrix>
     static void printMatrix(Matrix m) {
+        std::cout << "[" << m.getRows() << "," << m.getCols() << "]\n";
         for(uint64_t i = 0; i < m.getRows(); i++) {
             for(uint64_t j = 0; j < m.getCols(); j++) {
                 std::cout << m.get(i,j) << " ";

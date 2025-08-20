@@ -31,6 +31,7 @@ TEST(TEST_SUITE_NAME, ShouldBeAbleToCloneSelf) {
 }
 
 TEST(TEST_SUITE_NAME, ShouldBeAbleToCopyConstruct) {
+    NANLA_SKIP_GTEST_IF_CUDA_DEVICE_NOT_GT_1;
     using namespace NaNLA::MemoryControllers;
 
     auto hmc = std::make_shared<HostMemoryController<float>>(256, 256);

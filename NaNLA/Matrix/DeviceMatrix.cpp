@@ -8,7 +8,7 @@ namespace NaNLA {
     template<class NumericType, template<class> class Controller>
     DeviceMatrix<NumericType, Controller>::DeviceMatrix(uint64_t rows, uint64_t cols) :
             Internal::AbstractDeviceMatrix<NumericType, Controller < NumericType>>(std::forward<uint64_t>(rows), std::forward<uint64_t>(cols)) {
-        ;
+                ;
     }
 
     template<class NumericType, template<class> class Controller>
@@ -31,6 +31,11 @@ namespace NaNLA {
     template<template<class> class ResultController, class RhsNumericType, template<class> class RhsController>
     void DeviceMatrix<NumericType, Controller>::cudaDot(DeviceMatrix<RhsNumericType, RhsController> rhs, DeviceMatrix<typename std::common_type_t<NumericType, RhsNumericType>, ResultController> rHostMatrix) const{
         NaNLA::MatrixOperations::cudaMatrixMultiply((*this), rhs, rHostMatrix);
+    }
+
+    template<class NumericType, template<class> class Controller>
+    DeviceMatrix<NumericType, Controller> DeviceMatrix<NumericType, Controller>::T() const {
+        return MatrixOperations::cudaMatrixTranspose(*this);
     }
 
 } // NaNLA
