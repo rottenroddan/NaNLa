@@ -61,7 +61,7 @@ TEST(TEST_SUITE_NAME, shouldCopyHostToDeviceBackToHostDifferentTypes) {
     NaNLA::Test::Utilities::assertMemoryControllersAreEqual<int, int>(hmc, testHMC);
 }
 
-TEST(TEST_SUITE_NAME, shouldCopyHost_To_Device_Back_To_Host_WhenHostIsRowTiled) {
+TEST(TEST_SUITE_NAME, shouldCopyHostToDeviceBackToHostWhenHostIsRowTiled) {
     auto hmc = std::make_shared<TiledHostMemoryController<int, HostCacheAlignedMemoryController, RowMajorTileDetails>> (16, 16, 4);
     auto dmc = std::make_shared<DeviceMemoryController<int>>(16, 16);
     NaNLA::Test::Utilities::populateHMCWithRandomValues<int>(std::dynamic_pointer_cast<HostAccessible<int>>(hmc));
@@ -77,7 +77,7 @@ TEST(TEST_SUITE_NAME, shouldCopyHost_To_Device_Back_To_Host_WhenHostIsRowTiled) 
     NaNLA::Test::Utilities::assertMemoryControllersAreEqual<int, int>(hmc, testHMC);
 }
 
-TEST(TEST_SUITE_NAME, shouldCopyHost_To_Device_Back_To_Host_WhenHostIsDifferentTypeRowTiled) {
+TEST(TEST_SUITE_NAME, shouldCopyHostToDeviceBackToHostWhenHostIsDifferentTypeRowTiled) {
     auto hmc = std::make_shared<TiledHostMemoryController<int, HostCacheAlignedMemoryController, RowMajorTileDetails>> (16, 16, 4);
     auto dmc = std::make_shared<DeviceMemoryController<long>>(16, 16);
     NaNLA::Test::Utilities::populateHMCWithRandomValues<int>(std::dynamic_pointer_cast<HostAccessible<int>>(hmc));
@@ -93,7 +93,7 @@ TEST(TEST_SUITE_NAME, shouldCopyHost_To_Device_Back_To_Host_WhenHostIsDifferentT
     NaNLA::Test::Utilities::assertMemoryControllersAreEqual<int, int>(hmc, testHMC);
 }
 
-TEST(TEST_SUITE_NAME, shouldCopyHost_To_Device_Back_To_Host_WhenHostIsDifferentTypeColTiled) {
+TEST(TEST_SUITE_NAME, shouldCopyHostToDeviceBackToHostWhenHostIsDifferentTypeColTiled) {
     auto hmc = std::make_shared<TiledHostMemoryController<int, HostCacheAlignedMemoryController, ColMajorTileDetails>> (16, 16, 4);
     auto dmc = std::make_shared<DeviceMemoryController<long>>(16, 16);
     NaNLA::Test::Utilities::populateHMCWithRandomValues<int>(std::dynamic_pointer_cast<HostAccessible<int>>(hmc));
@@ -331,6 +331,8 @@ TEST(TEST_SUITE_NAME, shouldThrowInvalidDimensionExceptionWhenDimensionsDontMatc
 }
 
 TEST(TEST_SUITE_NAME, shouldCopyHToD1ToD2ToH) {
+    NANLA_SKIP_GTEST_IF_CUDA_DEVICE_NOT_GT_1;
+
     auto hmc = std::make_shared<HostMemoryController<int>> (556, 993);
     NaNLA::Common::setThreadCudaDevice(0);
     auto dmc1 = std::make_shared<DeviceMemoryController<int>>(556, 993);
@@ -400,30 +402,10 @@ std::shared_ptr<MemoryController<NumericType>> generateDeviceMemoryController(ui
     }
 }
 
-TEST(TEST_SUITE_NAME, shitshit) {
-//    auto hmc = std::shared_ptr<MemoryController<float>>();
-//    auto dmc1 = std::shared_ptr<MemoryController<float>>();
-//    auto dmc2 = std::shared_ptr<MemoryController<float>>();
-//    auto testHmc = std::shared_ptr<MemoryController<float>>();
-//    uint64_t i = 1;
-//    uint64_t j = 1;
-//
-//
-//    hmc = generateHostMemoryController<float>(i,j, 1);
-//    dmc1 = generateDeviceMemoryController<float>(i,j, 0);
-//    dmc2 = generateDeviceMemoryController<float>(i,j, 0);
-//    testHmc = generateHostMemoryController<float>(i, j, 0);
-//
-//    TransferStrategies::copyValues(hmc, dmc1);
-//    TransferStrategies::copyValues(dmc1, dmc2);
-//    TransferStrategies::copyValues(dmc2, testHmc);
-//    NaNLA::Test::Utilities::assertMemoryControllersAreEqual(std::dynamic_pointer_cast<HostAccessible<float>>(hmc), std::dynamic_pointer_cast<HostAccessible<float>>(testHmc));
-
-    //dmc1 = generateDeviceMemoryController<float>(i,j)
-}
-
 // TODO: Let's fix this test one day.
 TEST(TEST_SUITE_NAME, shouldPassComprehensiveTestSameTypes) {
+    NANLA_SKIP_GTEST_IF_CUDA_DEVICE_NOT_GT_1;
+
     uint64_t maxRows = 32;
     uint64_t maxCols = 32;
 

@@ -27,6 +27,8 @@ namespace NaNLA {
         void dot(const HostMatrix<RhsNumericType, RhsController> rhs, HostMatrix<rNumericType, ResultController>) const;
 
         HostMatrix<NumericType, Controller> T() const;
+
+        HostMatrix<NumericType, Controller>& operator=(const HostMatrix<NumericType, Controller>& other);
     };
 
     template<class NumericType>

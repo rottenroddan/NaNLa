@@ -7,7 +7,7 @@
 namespace NaNLA::Internal {
     template<class NumericType>
     constexpr auto isCastableToDeviceMemoryController(std::shared_ptr<MemoryControllers::MemoryController<NumericType>> memoryController) -> bool {
-        return dynamic_cast<MemoryControllers::DeviceMemoryController<NumericType>*>(memoryController.get()) != nullptr;
+        return std::dynamic_pointer_cast<MemoryControllers::DeviceMemoryController<NumericType>>(memoryController) != nullptr;
     }
 
     template<class NumericType>
@@ -32,17 +32,17 @@ namespace NaNLA::Internal {
 
     template<class NumericType>
     constexpr auto isCastableToTileableMemoryController(std::shared_ptr<MemoryControllers::MemoryController<NumericType>> memoryController) -> bool {
-        return dynamic_cast<MemoryControllers::Tileable<NumericType>*>(memoryController.get()) != nullptr;
+        return std::dynamic_pointer_cast<MemoryControllers::Tileable<NumericType>>(memoryController) != nullptr;
     }
 
     template<class NumericType>
     constexpr auto isTileRowMajor(std::shared_ptr<MemoryControllers::MemoryController<NumericType>> memoryController) -> bool {
-        return dynamic_cast<MemoryControllers::RowMajorTileDetails<NumericType>*>(memoryController.get()) != nullptr;
+        return std::dynamic_pointer_cast<MemoryControllers::RowMajorTileDetails<NumericType>>(memoryController) != nullptr;
     }
 
     template<class NumericType>
     constexpr auto isTileColMajor(std::shared_ptr<MemoryControllers::MemoryController<NumericType>> memoryController) -> bool {
-        return dynamic_cast<MemoryControllers::ColMajorTileDetails<NumericType>*>(memoryController.get()) != nullptr;
+        return std::dynamic_pointer_cast<MemoryControllers::ColMajorTileDetails<NumericType>>(memoryController) != nullptr;
     }
 
     template<class aNumericType, class bNumericType>

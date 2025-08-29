@@ -36,7 +36,8 @@ namespace NaNLA {
             auto getActualCols() const -> uint64_t;
             auto getActualTotalSize() const -> uint64_t;
             auto getMatrix() const -> NumericType*;
-            auto getController() -> std::shared_ptr<NaNLA::MemoryControllers::MemoryController<NumericType>>;
+            auto getController() const -> std::shared_ptr<NaNLA::MemoryControllers::MemoryController<NumericType>>;
+            Matrix<NumericType, ExplicitController>& operator=(const Matrix<NumericType, ExplicitController>& other);
 
             template<class CopyNumericType = NumericType, class DstMatrixType>
             void copyTo(DstMatrixType dstMatrix);

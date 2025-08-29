@@ -264,12 +264,27 @@ namespace NaNLA::MatrixOperations {
         }
     }
 
-    template<class Matrix, class rMatrix = Matrix, typename... Args>
-    rMatrix hostTranspose(const Matrix a, Args... args) {
-        rMatrix t(a.getCols(), a.getRows(), args...);
-        for(uint64_t i = 0; i < a.getRows(); i++) {
-            for(uint64_t j = 0; j < a.getCols(); j++) {
-                t.at(j,i) = a.get(i,j);
+    template<class Matrix, class R_Matrix = Matrix, typename... Args>
+    R_Matrix hostTranspose(const Matrix a, Args... args) {
+        R_Matrix t(a.getCols(), a.getRows(), args...);
+        // check if A Mat and T Mat are both tileable and different memory layouts with same tile size to
+        // optimize the copy.
+        if (Internal::isCastableToTileableMemoryController(a.getController()) &&
+                Internal::isCastableToTileableMemoryController(t.getController()) &&
+                std::dynamic_pointer_cast<MemoryControllers::Tileable<typename Matrix::DataType>>(a.getController())->getTileMajor() !=
+                        std::dynamic_pointer_cast<MemoryControllers::Tileable<typename R_Matrix::DataType>>(t.getController())->getTileMajor() &&
+                std::dynamic_pointer_cast<MemoryControllers::Tileable<typename Matrix::DataType>>(a.getController())->getTileSize() ==
+                        std::dynamic_pointer_cast<MemoryControllers::Tileable<typename R_Matrix::DataType>>(t.getController())->getTileSize())
+        {
+            memcpy_s(t.getMatrix(),
+                     t.getActualTotalSize() * sizeof(typename R_Matrix::DataType),
+                     a.getMatrix(),
+                     a.getActualTotalSize() * sizeof(typename Matrix::DataType));
+        } else {
+            for (uint64_t i = 0; i < a.getRows(); i++) {
+                for (uint64_t j = 0; j < a.getCols(); j++) {
+                    t.at(j, i) = a.get(i, j);
+                }
             }
         }
 

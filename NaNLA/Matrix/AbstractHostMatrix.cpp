@@ -19,4 +19,13 @@ namespace NaNLA::Internal {
         return this->controller->get(i,j);
     }
 
+    template<class NumericType, class ExplicitController>
+    AbstractHostMatrix<NumericType, ExplicitController>& AbstractHostMatrix<NumericType, ExplicitController>
+            ::operator=(const AbstractHostMatrix<NumericType, ExplicitController>& other) {
+        if(this != &other) {
+            Internal::Matrix<NumericType, ExplicitController>::operator=(other);
+        }
+        return *this;
+    }
+
 } // NaNLA

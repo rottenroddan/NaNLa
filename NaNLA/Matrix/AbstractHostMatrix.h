@@ -22,6 +22,7 @@ namespace NaNLA::Internal {
         explicit AbstractHostMatrix(Args&&... args) : Matrix<NumericType, ExplicitController>(args...) { ; }
 
         AbstractHostMatrix(const AbstractHostMatrix<NumericType, ExplicitController>& abstractHostMatrix);
+        AbstractHostMatrix<NumericType, ExplicitController>& operator=(const AbstractHostMatrix<NumericType, ExplicitController>& other);
     public:
         __forceinline auto at(uint64_t i, uint64_t j) -> NumericType&;
         __forceinline auto get(uint64_t i, uint64_t j) const -> NumericType;

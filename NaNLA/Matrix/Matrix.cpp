@@ -45,7 +45,7 @@ namespace NaNLA {
     }
 
     template<class NumericType, class ExplicitController>
-    auto Internal::Matrix<NumericType, ExplicitController>::getController() -> std::shared_ptr<NaNLA::MemoryControllers::MemoryController<NumericType>> {
+    auto Internal::Matrix<NumericType, ExplicitController>::getController() const -> std::shared_ptr<NaNLA::MemoryControllers::MemoryController<NumericType>> {
         return this->controller;
     }
 
@@ -55,5 +55,14 @@ namespace NaNLA {
         auto _src = this->getController();
         auto _dst = dstMatrix.getController();
         NaNLA::MemoryControllers::TransferStrategies::copyValues(_src, _dst);
+    }
+
+    template<class NumericType, class ExplicitController>
+    Internal::Matrix<NumericType, ExplicitController>& Internal::Matrix<NumericType, ExplicitController>::operator=(const Matrix<NumericType, ExplicitController>& other) {
+        if (this != &other) {
+            this->controller = other.controller;
+            int y = 10 + 1;
+        }
+        return *this;
     }
 }
