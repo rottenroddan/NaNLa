@@ -39,4 +39,13 @@ namespace NaNLA {
     HostMatrix<NumericType, Controller> HostMatrix<NumericType, Controller>::T() const {
         return NaNLA::MatrixOperations::hostTranspose((*this));
     }
+
+
+    template<class NumericType, template<class> class Controller>
+    HostMatrix<NumericType, Controller>& HostMatrix<NumericType, Controller>::operator=(const HostMatrix<NumericType, Controller>& other) {
+        if(this != &other) {
+            Internal::AbstractHostMatrix<NumericType, Controller<NumericType>>::operator=(other);
+        }
+        return *this;
+    }
 } // NaNLA

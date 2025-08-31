@@ -39,8 +39,8 @@ namespace NaNLA::MatrixOperations {
     template<class LhsMatrix, class RhsMatrix, class ResultMatrix>
     void hostTiledMatrixMultiply(LhsMatrix lhs, RhsMatrix rhs, ResultMatrix resultMatrix);
 
-    template<class Matrix, class rMatrix, typename... Args>
-    rMatrix hostTranspose(Matrix a, Args... args);
+    template<class Matrix, class R_Matrix, typename... Args>
+    R_Matrix hostTranspose(Matrix a, Args... args);
 
     template<class LhsMatrix, class RhsMatrix, class ResultMatrix>
     void cudaMatrixMultiply(LhsMatrix& lhs, RhsMatrix& rhs, ResultMatrix& result);

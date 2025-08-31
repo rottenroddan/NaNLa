@@ -457,9 +457,6 @@ TEST(TEST_SUITE_NAME, DeviceTiledMatrixValidationViaCublas) {
 }
 
 TEST(TEST_SUITE_NAME, HostMatrixValidationViaCublas) {
-
-
-
     for(uint64_t m = START_DIM; m <= MAX_DIM_SIZE; m++) {
         for(uint64_t k = START_DIM; k <= MAX_DIM_SIZE; k++) {
             for (uint64_t n = START_DIM; n <= MAX_DIM_SIZE; n++) {

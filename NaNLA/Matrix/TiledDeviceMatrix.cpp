@@ -147,11 +147,7 @@ TiledDeviceMatrix<NumericType, TiledController, Controller, TileDetails> TiledDe
     TiledDeviceMatrix<NumericType, TiledController, Controller, rTileDetails>
     TiledDeviceMatrix<NumericType, TiledController, Controller, TileDetails>::TFlipMajor() {
         TiledDeviceMatrix<NumericType, TiledController, Controller, rTileDetails> rMatrix(this->getCols(), this->getRows(), this->getTileSize());
-//        MemoryControllers
-//            ::TransferStrategies
-//                ::r_copyDeviceToDeviceValues<NumericType>
-//                        (std::dynamic_pointer_cast<MemoryControllers::DeviceAccessible<NumericType>>(std::make_shared(this->getController())),
-//                            std::dynamic_pointer_cast<MemoryControllers::DeviceAccessible<NumericType>>(std::make_shared(rMatrix.getController())));
+        cudaMemcpy(rMatrix.getMatrix(), this->getMatrix(), sizeof(NumericType) * this->getActualTotalSize(), cudaMemcpyDeviceToDevice);
         return rMatrix;
     }
 } // NaNLA

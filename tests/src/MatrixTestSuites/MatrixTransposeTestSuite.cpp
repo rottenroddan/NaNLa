@@ -181,7 +181,7 @@ TEST(TEST_SUITE_NAME, ShouldTransposeHostMatrixAndValidateAgainstCUBLAS) {
             populateMatrices(a1, a2, i, j);
             auto b1 = transposeMatrixColMajor_cublas(a1, i, j);
             auto b2 = a2.T();
-            validateMatrices(b1, b2, j, i);
+            ASSERT_NO_FATAL_FAILURE(validateMatrices(b1, b2, j, i));
 
             memset(a1, 0x0, i * j * sizeof(float));
             memset(b1, 0x0, i * j * sizeof(float));
@@ -200,7 +200,7 @@ TEST(TEST_SUITE_NAME, ShouldTransposeTiledHostMatrixAndValidateAgainstCUBLAS) {
             populateMatrices(a1, a2, i, j);
             auto b1 = transposeMatrixColMajor_cublas(a1, i, j);
             auto b2 = a2.T();
-            validateMatrices(b1, b2, j, i);
+            ASSERT_NO_FATAL_FAILURE(validateMatrices(b1, b2, j, i));
 
             memset(a1, 0x0, i * j * sizeof(float));
             memset(b1, 0x0, i * j * sizeof(float));
@@ -219,7 +219,7 @@ TEST(TEST_SUITE_NAME, ShouldTransposeTiledHostMatrixFromRowToColMajorAndValidate
             populateMatrices(a1, a2, i, j);
             auto b1 = transposeMatrixColMajor_cublas(a1, i, j);
             auto b2 = a2.TFlipMajor<NaNLA::MemoryControllers::ColMajorTileDetails>();
-            validateMatrices(b1, b2, j, i);
+            ASSERT_NO_FATAL_FAILURE(validateMatrices(b1, b2, j, i));
 
             memset(a1, 0x0, i * j * sizeof(float));
             memset(b1, 0x0, i * j * sizeof(float));
@@ -238,7 +238,7 @@ TEST(TEST_SUITE_NAME, ShouldTransposeTiledHostMatrixFromColToRowMajorAndValidate
             populateMatrices(a1, a2, i, j);
             auto b1 = transposeMatrixColMajor_cublas(a1, i, j);
             auto b2 = a2.TFlipMajor<NaNLA::MemoryControllers::RowMajorTileDetails>();
-            validateMatrices(b1, b2, j, i);
+            ASSERT_NO_FATAL_FAILURE(validateMatrices(b1, b2, j, i));
 
             memset(a1, 0x0, i * j * sizeof(float));
             memset(b1, 0x0, i * j * sizeof(float));
