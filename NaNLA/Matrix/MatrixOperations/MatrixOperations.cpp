@@ -171,7 +171,13 @@ namespace NaNLA::MatrixOperations {
     void hostMatrixMultiply(LhsMatrix lhs, RhsMatrix rhs, ResultMatrix resultMatrix) {
         assertDotDims(lhs, rhs, resultMatrix);
 
-        uint64_t totalThreads = (std::thread::hardware_concurrency() < lhs.getRows()) ? std::thread::hardware_concurrency() : lhs.getRows();
+        uint64_t totalThreads;
+        if(lhs.getRows() * rhs.getCols() * lhs.getCols() < 1e5) {
+            totalThreads = 1;
+        } else {
+            totalThreads = (std::thread::hardware_concurrency() < lhs.getRows()) ? std::thread::hardware_concurrency()
+                                                                    : lhs.getRows();
+        }
         NaNLA::Common::ThreadPool threadPool(totalThreads);
 
         // int div floors towards zero. Diff then is the remainder
