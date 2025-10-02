@@ -5,6 +5,7 @@
 #ifndef CUPYRE_MATRIXOPERATIONS_H
 #define CUPYRE_MATRIXOPERATIONS_H
 
+#include <algorithm>
 #include <cassert>
 #include <Windows.h>
 

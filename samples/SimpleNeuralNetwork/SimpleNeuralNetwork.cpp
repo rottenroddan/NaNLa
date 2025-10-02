@@ -16,7 +16,8 @@ void populateUniformly(NaNLA::HMatrix<float>& m, float a, float b) {
     }
 }
 
-void populateReluHeNormal(NaNLA::HMatrix<float>& m) {
+template<typename T>
+void populateReluHeNormal(T& m) {
     std::mt19937 rng(std::random_device{}());
     float stddev = std::sqrt(2.0f / m.getCols());
     std::normal_distribution<float> dist(0.0f, stddev);
@@ -48,8 +49,9 @@ NaNLA::HMatrix<float> relu(const NaNLA::HMatrix<float>& h1) {
 double relu(double x) { return x > 0 ? x : 0; }
 double d_relu(double x) { return x > 0 ? 1.0 : 0.0; }
 
-NaNLA::HMatrix<float> softmax(const NaNLA::HMatrix<float>& z) {
-    NaNLA::HMatrix<float> out(z.getRows(), z.getCols());
+template<typename T, typename... Args>
+NaNLA::ColTiledHostMatrix<float> softmax(const T& z, Args... args) {
+    NaNLA::ColTiledHostMatrix<float> out(z.getRows(), z.getCols(), args...);
 
     for(uint64_t col = 0; col < z.getCols(); col++) {
         float maxVal = -std::numeric_limits<float>::infinity();
@@ -71,7 +73,7 @@ NaNLA::HMatrix<float> softmax(const NaNLA::HMatrix<float>& z) {
 NeuralNetwork::NeuralNetwork(const std::vector<int>& layers, double learningRate)
         : layers(layers), learningRate(learningRate) {
     for(size_t i = 0; i < layers.size() - 1; i++) {
-        weights.emplace_back(layers[i+1], layers[i]);
+        weights.emplace_back(layers[i+1], layers[i], TILE_SIZE);
         //populateUniformly(weights[i], -0.5f, 0.5f);
         populateReluHeNormal(weights[i]);
         biases.emplace_back(layers[i+1], 1);
@@ -81,11 +83,12 @@ NeuralNetwork::NeuralNetwork(const std::vector<int>& layers, double learningRate
 }
 
 void NeuralNetwork::train(const std::vector<std::vector<float>>& input, const std::vector<std::vector<float>>& target) {
-    std::vector<NaNLA::HMatrix<float>> activations, zs;
+    std::vector<NaNLA::ColTiledHostMatrix<float>> activations;
+    std::vector<NaNLA::RowTiledHostMatrix<float>> zs;
     assert(input.size() > 0);
     assert(target.size() > 0);
 
-    NaNLA::HMatrix<float> a(input[0].size(), input.size());
+    NaNLA::ColTiledHostMatrix<float> a(input[0].size(), input.size(), TILE_SIZE);
     for(size_t i = 0; i < a.getRows(); i++) {
         for(size_t j = 0; j < a.getCols(); j++) {
             a.at(i, j) = input[j][i];
@@ -94,10 +97,11 @@ void NeuralNetwork::train(const std::vector<std::vector<float>>& input, const st
     activations.push_back(a);
 
     // forward pass
+    PROFILE_START("Forward Pass");
     for(size_t i = 0; i < weights.size(); i++) {
-        NaNLA::HMatrix<float> z(weights[i].getRows(), a.getCols());
+        NaNLA::RowTiledHostMatrix<float> z(weights[i].getRows(), a.getCols(), TILE_SIZE);
         weights[i].dot(a, z);
-        //broad cast add
+        //broadcast add
         for(uint64_t j = 0; j < biases[i].getRows(); j++) {
             for(uint64_t k = 0; k < z.getCols(); k++) {
                 z.at(j,k) += biases[i].at(j,0);
@@ -105,14 +109,14 @@ void NeuralNetwork::train(const std::vector<std::vector<float>>& input, const st
         }
 
         // deep copy z into zTemp. Add zTemp to z-list.
-        NaNLA::HMatrix<float> zTemp(z.getRows(), z.getCols());
+        NaNLA::RowTiledHostMatrix<float> zTemp(z.getRows(), z.getCols(), TILE_SIZE);
         z.copyTo(zTemp);
         zs.push_back(zTemp);
 
         if(i == weights.size() - 1) {
-            a = softmax(z);
+            a = softmax(z, TILE_SIZE);
         } else {
-            NaNLA::HMatrix<float> activated(z.getRows(), z.getCols());
+            NaNLA::ColTiledHostMatrix<float> activated(z.getRows(), z.getCols(), TILE_SIZE);
             z.copyTo(activated);
             for(uint64_t i = 0; i < activated.getRows(); i++) {
                 for(uint64_t j = 0; j < activated.getCols(); j++) {
@@ -123,6 +127,7 @@ void NeuralNetwork::train(const std::vector<std::vector<float>>& input, const st
         }
         activations.push_back(a);
     }
+    PROFILE_END("Forward Pass");
 
     NaNLA::HMatrix<float> targetMatrix(target[0].size(),target.size());
     for(uint64_t i = 0; i < targetMatrix.getRows(); i++) {
@@ -130,9 +135,9 @@ void NeuralNetwork::train(const std::vector<std::vector<float>>& input, const st
             targetMatrix.at(i, j) = target[j][i];
         }
     }
-    NaNLA::HMatrix<float> output = activations.back();
+    NaNLA::ColTiledHostMatrix<float> output = activations.back();
 
-    NaNLA::HMatrix<float> error(output.getRows(), output.getCols());
+    NaNLA::ColTiledHostMatrix<float> error(output.getRows(), output.getCols(), TILE_SIZE);
     output.copyTo(error);
     for(uint64_t i = 0; i < error.getRows(); i++) {
         for(uint64_t j = 0; j < error.getCols(); j++) {
@@ -140,15 +145,16 @@ void NeuralNetwork::train(const std::vector<std::vector<float>>& input, const st
         }
     }
 
-    std::deque<NaNLA::HMatrix<float>> deltas;
+    PROFILE_START("HiddenError")
+    std::deque<NaNLA::ColTiledHostMatrix<float>> deltas;
     deltas.push_back(error);
     for(int64_t l = weights.size() - 2; l >= 0; l--) {
         auto weightT = weights[l+1].T();
 
-        NaNLA::HMatrix<float> hiddenError(weightT.getRows(), deltas[0].getCols());
+        NaNLA::ColTiledHostMatrix<float>hiddenError(weightT.getRows(), deltas[0].getCols(), TILE_SIZE);
         weightT.dot(deltas[0], hiddenError);
 
-        NaNLA::HMatrix<float> d_act = zs[l];
+        NaNLA::RowTiledHostMatrix<float> d_act = zs[l];
         for(uint64_t i = 0; i < d_act.getRows(); i++) {
             for(uint64_t j = 0; j < d_act.getCols(); j++) {
                 d_act.at(i,j) = d_relu(d_act.at(i,j));
@@ -158,10 +164,13 @@ void NeuralNetwork::train(const std::vector<std::vector<float>>& input, const st
 
         deltas.push_front(hiddenError);
     }
+    PROFILE_END("HiddenError")
 
+
+    PROFILE_START("Deltas");
     for(uint64_t l = 0; l < weights.size(); l++) {
         auto aPrevT = activations[l].T();
-        NaNLA::HMatrix<float> deltaW(deltas[l].getRows(), aPrevT.getCols());
+        NaNLA::RowTiledHostMatrix<float> deltaW(deltas[l].getRows(), aPrevT.getCols(), TILE_SIZE);
         deltas[l].dot(aPrevT, deltaW);
 
         float scale = 1.0f / static_cast<float>(a.getCols());
@@ -189,18 +198,22 @@ void NeuralNetwork::train(const std::vector<std::vector<float>>& input, const st
             biases[l].at(i,0) -= db.at(i,0);
         }
     }
+    PROFILE_END("Deltas");
+
+    PROFILE_REPORT();
 }
 
 std::vector<std::vector<float>> NeuralNetwork::predict(
         const std::vector<std::vector<float>>& inputs)
 {
+    PROFILE_START("Predict");
     assert(inputs.size() > 0);
 
     uint64_t batch_size = inputs.size();
     uint64_t input_dim = inputs[0].size();
 
     // Convert input vector<vector> to a matrix (features × batch_size)
-    NaNLA::HMatrix<float> a(input_dim, batch_size);
+    NaNLA::ColTiledHostMatrix<float> a(input_dim, batch_size, TILE_SIZE);
     for(uint64_t i = 0; i < input_dim; i++) {
         for(uint64_t j = 0; j < batch_size; j++) {
             a.at(i,j) = inputs[j][i];
@@ -209,7 +222,7 @@ std::vector<std::vector<float>> NeuralNetwork::predict(
 
     // Forward pass
     for(uint64_t i = 0; i < weights.size(); i++) {
-        NaNLA::HMatrix<float> z(weights[i].getRows(), a.getCols());
+        NaNLA::RowTiledHostMatrix<float> z(weights[i].getRows(), a.getCols(), TILE_SIZE);
         weights[i].dot(a, z);
 
         // Broadcast biases across batch
@@ -220,14 +233,16 @@ std::vector<std::vector<float>> NeuralNetwork::predict(
         }
 
         if(i == weights.size() - 1) {
-            a = softmax(z);  // ensure softmax is column-wise
+            a = softmax(z, TILE_SIZE);  // ensure softmax is column-wise
         } else {
             for(uint64_t row = 0; row < z.getRows(); row++) {
                 for(uint64_t col = 0; col < z.getCols(); col++) {
                     z.at(row,col) = relu(z.at(row,col));
                 }
             }
-            a = z;
+
+            a = NaNLA::ColTiledHostMatrix<float>(z.getRows(), z.getCols(), TILE_SIZE);
+            z.copyTo(a);
         }
     }
 
@@ -238,6 +253,6 @@ std::vector<std::vector<float>> NeuralNetwork::predict(
             output[col][row] = a.at(row,col);
         }
     }
-
+    PROFILE_END("Predict");
     return output;
 }
