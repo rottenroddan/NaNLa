@@ -19,11 +19,11 @@ static int HEIGHT = 1200;
 static std::vector<unsigned int> g_pixels;   // 0x00RRGGBB (BGRA in memory)
 static BITMAPINFO g_bi = {};
 
-#define MAX_EPOCH 10
+#define MAX_EPOCH 1
 
 std::vector<DataPoint> dp_input, dp_truth_validation, six_class_input, six_class_truth_validation;
-NeuralNetwork three_class_nn({2, 12, 24, 3}, .075f);
-NeuralNetwork six_class_nn({2, 64, 128, 6}, .05f);
+NeuralNetwork g_three_class_nn({2, 12, 24, 3}, .075f);
+NeuralNetwork g_six_class_nn({2, 64, 128, 6}, .05f);
 
 inline void putPixel(int x, int y, unsigned int rgb)
 {
@@ -259,6 +259,7 @@ static void drawSixClassProblem(const std::vector<DataPoint>& sixClassinput, con
     for(std::future<void>& f : futures) {
         f.get();
     }
+    six_nn.report();
 }
 
 static void draw(const std::vector<DataPoint>& threeClassinput, const std::vector<DataPoint>& threeClassValidation,
@@ -299,21 +300,21 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
             g_bi.bmiHeader.biCompression = BI_RGB;
 
             clear(0x00222222);
-            renderScene(dp_input, dp_truth_validation, six_class_input, six_class_truth_validation, three_class_nn, six_class_nn);
+            renderScene(dp_input, dp_truth_validation, six_class_input, six_class_truth_validation, g_three_class_nn, g_six_class_nn);
 
-            SetTimer(hWnd, 1, 25, NULL);
+            SetTimer(hWnd, 1, 1, nullptr);
 
             return 0;
         case WM_COMMAND:
             if (LOWORD(wParam) == 1) { // button ID
                 // User clicked button
                 // Trigger repaint
-                InvalidateRect(hWnd, NULL, TRUE);
+                InvalidateRect(hWnd, nullptr, TRUE);
             }
             break;
         case WM_TIMER:
             // Trigger repaint every tick
-            InvalidateRect(hWnd, NULL, FALSE);
+            InvalidateRect(hWnd, nullptr, FALSE);
             return 0;
         case WM_PAINT: {
             PAINTSTRUCT ps;
@@ -330,7 +331,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     SRCCOPY
             );
 
-            renderScene(dp_input, dp_truth_validation, six_class_input, six_class_truth_validation, three_class_nn, six_class_nn, true);
+            renderScene(dp_input, dp_truth_validation, six_class_input, six_class_truth_validation, g_three_class_nn, g_six_class_nn, true);
 
             EndPaint(hWnd, &ps);
             return 0;
@@ -343,16 +344,18 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
         case WM_DESTROY:
             PostQuitMessage(0);
             return 0;
+        default:
+            ;
     }
     return DefWindowProc(hWnd, msg, wParam, lParam);
 }
 
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow)
 {
-    dp_input = generate_dataset(12800, 1.0f);
+    dp_input = generate_dataset(25600, 1.0f);
     dp_truth_validation = generate_dataset(6400, 1.0f);
 
-    six_class_input = generate_checkerboard(12800, 1.0f);
+    six_class_input = generate_checkerboard(25600, 1.0f);
     six_class_truth_validation = generate_checkerboard(6400, 1.0f);
 
     const wchar_t CLASS_NAME[] = L"PixelGraphWindow";
@@ -378,7 +381,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow)
     );
 
     // Create the Refresh button
-    HWND hButton = CreateWindowEx(
+    CreateWindowEx(
             0, reinterpret_cast<LPCSTR>("BUTTON"), reinterpret_cast<LPCSTR>("Next Epoch"),
             WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
             10, 10, 100, 30,       // position & size

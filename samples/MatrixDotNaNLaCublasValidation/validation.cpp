@@ -22,10 +22,10 @@ void fillMatrix(__half *matrix, int n) {
     }
 }
 
-void cublasTest(int rows, int cols, float* h_A, float* h_B, float* h_C, float *d_A, float *d_B, float *d_C) {
+void cublasTest(int m, int n, int p, float* h_A, float* h_B, float* h_C, float *d_A, float *d_B, float *d_C) {
     // Copy data from host to device
-    cudaMemcpy(d_A, h_A, rows * cols * sizeof(float), cudaMemcpyHostToDevice);
-    cudaMemcpy(d_B, h_B, cols * cols * sizeof(float), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_A, h_A, m * n * sizeof(float), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_B, h_B, n * p * sizeof(float), cudaMemcpyHostToDevice);
 
     // cuBLAS setup
     cublasHandle_t handle;
@@ -40,10 +40,10 @@ void cublasTest(int rows, int cols, float* h_A, float* h_B, float* h_C, float *d
     cublasStatus_t status = cublasSgemm(
             handle,
             CUBLAS_OP_N, CUBLAS_OP_N, // No transpose for both A and B
-            rows, cols, cols,        // Dimensions
-            &alpha, d_A, rows,       // A and its leading dimension
-            d_B, cols,               // B and its leading dimension
-            &beta, d_C, rows         // C and its leading dimension
+            m, p, n,        // Dimensions
+            &alpha, d_A, m,       // A and its leading dimension
+            d_B, n,               // B and its leading dimension
+            &beta, d_C, m         // C and its leading dimension
     );
 
     // Check the cuBLAS operation status
@@ -52,7 +52,7 @@ void cublasTest(int rows, int cols, float* h_A, float* h_B, float* h_C, float *d
     }
 
     // Copy the result from device to host
-    cudaMemcpy(h_C, d_C, rows * cols * sizeof(float), cudaMemcpyDeviceToHost);
+    cudaMemcpy(h_C, d_C, m * p * sizeof(float), cudaMemcpyDeviceToHost);
 
     // Destroy cuBLAS handle
     cublasDestroy(handle);
@@ -131,11 +131,11 @@ void  testDot() {
 
     using namespace NaNLA::MemoryControllers;
     using DataType = float;
-    const uint64_t MAX_ITERATIONS = 100;
+    const uint64_t MAX_ITERATIONS = 1;
 
-    int m = 2048;
+    int m = 4096;
     int n = 2048;
-    int p = 2048;
+    int p = 1024;
     int size = m * n;
 
 
@@ -188,8 +188,7 @@ void  testDot() {
     NaNLA::TiledDeviceMatrix<DataType, TiledDeviceMemoryController, DeviceMemoryController, RowMajorTileDetails> tdp(m, p, 128);
 
     NaNLA::TiledHostMatrix<DataType, TiledHostMemoryController, PinnedMemoryController, ColMajorTileDetails> hptdm(m,n,128);
-    NaNLA::TiledHostMatrix<DataType, TiledHostMemoryController, PinnedMemoryController, RowMajorTileDetails> hptdn(m,n,128);
-    NaNLA::TiledHostMatrix<DataType, TiledHostMemoryController, PinnedMemoryController, RowMajorTileDetails> hptdo(m,n,128);
+    NaNLA::TiledHostMatrix<DataType, TiledHostMemoryController, PinnedMemoryController, RowMajorTileDetails> hptdn(n,p,128);
 
 
     hostA.copyTo(hptdm);
@@ -210,18 +209,18 @@ void  testDot() {
     NaNLA::TiledHostMatrix<DataType, TiledHostMemoryController, HostMemoryController, RowMajorTileDetails> htdp(m, p, 4);
     tdp.copyTo(htdp);
 
-    validate(hostC, htdp, m, n, 0.001);
-    validate(hostC, hdm, m, n, 0.001);
-    validate(hostC, tho, m, n, 0.001);
+    validate(hostC, htdp, m, p, 0.001);
+    validate(hostC, hdm, m, p, 0.001);
+    validate(hostC, tho, m, p, 0.001);
 
     // Record the start time
     // Allocate memory on the host
-    float* h_A = new float[m * p];
-    float* h_B = new float[p * n];
-    float* h_C = new float[m * n]();  // Initialize C to zero
+    float* h_A = new float[m * n];
+    float* h_B = new float[n * p];
+    float* h_C = new float[m * p]();  // Initialize C to zero
 
     // Initialize matrices A and B with some example values (for testing)
-    for (int i = 0; i < m * p; i++) {
+    for (int i = 0; i < m * n; i++) {
         h_A[i] = static_cast<float>(i % 10);  // Arbitrary values for testing
     }
     for (int i = 0; i < p * n; i++) {
@@ -230,18 +229,19 @@ void  testDot() {
 
     // Allocate memory on the device
     float *d_A, *d_B, *d_C;
-    cudaMalloc(&d_A, m * p * sizeof(float));
-    cudaMalloc(&d_B, p * n * sizeof(float));
-    cudaMalloc(&d_C, m * n * sizeof(float));
+    cudaMalloc(&d_A, m * n * sizeof(float));
+    cudaMalloc(&d_B, n * p * sizeof(float));
+    cudaMalloc(&d_C, m * p * sizeof(float));
 
 
     begin = std::chrono::high_resolution_clock::now();
     for(uint64_t x = 0; x < MAX_ITERATIONS; x++) {
-        cublasTest(m, n, h_A, h_B, h_C, d_A, d_B, d_C);
+        cublasTest(m, n, p, h_A, h_B, h_C, d_A, d_B, d_C);
     }
     // Record the end time
     end = std::chrono::high_resolution_clock::now();
     PTable.add("Matrix Dot", "cuBLAS", std::chrono::duration_cast<std::chrono::microseconds>(end - begin));
+
 
     // Clean up memory
     delete[] h_A;
