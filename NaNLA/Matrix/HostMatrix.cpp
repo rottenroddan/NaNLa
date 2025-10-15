@@ -31,7 +31,7 @@ namespace NaNLA {
 
     template<class NumericType, template<class> class Controller>
     template<class rNumericType, template<class> class ResultController, class RhsNumericType, template<class> class RhsController>
-    void HostMatrix<NumericType, Controller>::dot(const HostMatrix<RhsNumericType, RhsController> rhs, HostMatrix<rNumericType, ResultController> rHostMatrix) const {
+    void HostMatrix<NumericType, Controller>::multiply(const HostMatrix<RhsNumericType, RhsController> rhs, HostMatrix<rNumericType, ResultController> rHostMatrix) const {
         NaNLA::MatrixOperations::hostMatrixMultiply((*this), rhs, rHostMatrix);
     }
 

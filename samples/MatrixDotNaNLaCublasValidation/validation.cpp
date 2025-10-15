@@ -8,7 +8,7 @@
 #include <iostream>
 #include <NaNLA/Matrix/MemoryController/HostMemoryController.h>
 #include <NaNLA/Matrix/MemoryController/MemoryController.h>
-#include <NaNLA/Matrix/Matrix.h>
+#include "NaNLA/Matrix/AbstractMatrix.h"
 #include <NaNLA/Matrix/HostMatrix.h>
 #include <NaNLA/Matrix/TiledHostMatrix.h>
 #include <NaNLA/Matrix/DeviceMatrix.h>
@@ -33,8 +33,6 @@ void cublasTest(int rows, int cols, float* h_A, float* h_B, float* h_C, float *d
 
     float alpha = 1.0f;
     float beta = 0.0f;
-
-
 
     // Perform the matrix multiplication C = alpha * A * B + beta * C
     cublasStatus_t status = cublasSgemm(
@@ -147,7 +145,7 @@ void  testDot() {
 
     auto begin = std::chrono::high_resolution_clock::now();
     for(uint64_t x = 0; x < 1; x++) {
-        hostA.dot(hostB,hostC);
+        hostA.multiply(hostB, hostC);
     }
     auto end = std::chrono::high_resolution_clock::now();
     PTable.add("Matrix Dot", "Host Matrix", std::chrono::duration_cast<std::chrono::microseconds>(end - begin));
@@ -164,7 +162,7 @@ void  testDot() {
 
     begin = std::chrono::high_resolution_clock::now();
     for(uint64_t x = 0; x < MAX_ITERATIONS; x++) {
-        thm.dot(thn,tho);
+        thm.multiply(thn, tho);
     }
     end = std::chrono::high_resolution_clock::now();
     PTable.add("Matrix Dot", "Host Tiled Matrix", std::chrono::duration_cast<std::chrono::microseconds>(end - begin));

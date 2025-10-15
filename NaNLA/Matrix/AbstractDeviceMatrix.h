@@ -5,11 +5,11 @@
 #ifndef CUPYRE_R_ABSTRACTDEVICEMATRIX_H
 #define CUPYRE_R_ABSTRACTDEVICEMATRIX_H
 
-#include "Matrix.h"
+#include "AbstractMatrix.h"
 
 namespace NaNLA::Internal {
     template<class NumericType, class ExplicitController>
-    class AbstractDeviceMatrix : public Matrix<NumericType, ExplicitController> {
+    class AbstractDeviceMatrix : public AbstractMatrix<NumericType, ExplicitController> {
     protected:
         template<class... Args>
         AbstractDeviceMatrix(Args...);

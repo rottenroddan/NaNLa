@@ -7,7 +7,7 @@
 namespace NaNLA::Internal {
     template<class NumericType, class ExplicitController>
     AbstractTileMatrix<NumericType, ExplicitController>::AbstractTileMatrix(uint64_t rows, uint64_t cols, uint64_t tileSize)
-    : Matrix<NumericType, ExplicitController>(rows, cols, tileSize) {
+    : AbstractMatrix<NumericType, ExplicitController>(rows, cols, tileSize) {
         ;
     }
 

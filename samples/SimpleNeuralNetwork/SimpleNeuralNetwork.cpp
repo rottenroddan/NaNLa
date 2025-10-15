@@ -96,7 +96,7 @@ void NeuralNetwork::train(const std::vector<std::vector<float>>& input, const st
     // forward pass
     for(size_t i = 0; i < weights.size(); i++) {
         NaNLA::HMatrix<float> z(weights[i].getRows(), a.getCols());
-        weights[i].dot(a, z);
+        weights[i].multiply(a, z);
         //broad cast add
         for(uint64_t j = 0; j < biases[i].getRows(); j++) {
             for(uint64_t k = 0; k < z.getCols(); k++) {
@@ -146,7 +146,7 @@ void NeuralNetwork::train(const std::vector<std::vector<float>>& input, const st
         auto weightT = weights[l+1].T();
 
         NaNLA::HMatrix<float> hiddenError(weightT.getRows(), deltas[0].getCols());
-        weightT.dot(deltas[0], hiddenError);
+        weightT.multiply(deltas[0], hiddenError);
 
         NaNLA::HMatrix<float> d_act = zs[l];
         for(uint64_t i = 0; i < d_act.getRows(); i++) {
@@ -162,7 +162,7 @@ void NeuralNetwork::train(const std::vector<std::vector<float>>& input, const st
     for(uint64_t l = 0; l < weights.size(); l++) {
         auto aPrevT = activations[l].T();
         NaNLA::HMatrix<float> deltaW(deltas[l].getRows(), aPrevT.getCols());
-        deltas[l].dot(aPrevT, deltaW);
+        deltas[l].multiply(aPrevT, deltaW);
 
         float scale = 1.0f / static_cast<float>(a.getCols());
         for(uint64_t i = 0; i < deltaW.getRows(); i++) {
@@ -210,7 +210,7 @@ std::vector<std::vector<float>> NeuralNetwork::predict(
     // Forward pass
     for(uint64_t i = 0; i < weights.size(); i++) {
         NaNLA::HMatrix<float> z(weights[i].getRows(), a.getCols());
-        weights[i].dot(a, z);
+        weights[i].multiply(a, z);
 
         // Broadcast biases across batch
         for(uint64_t row = 0; row < biases[i].getRows(); row++) {

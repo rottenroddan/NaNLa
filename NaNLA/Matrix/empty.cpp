@@ -19,7 +19,7 @@
 #include "MemoryController/Utils/MemoryControllerUtilities.h"
 #include "MatrixOperations/MatrixOperations.h"
 
-#include "Matrix.h"
+#include "AbstractMatrix.h"
 #include "HostMatrix.h"
 #include "AbstractTileMatrix.h"
 #include "AbstractDeviceMatrix.h"
