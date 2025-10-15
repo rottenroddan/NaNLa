@@ -230,8 +230,6 @@ TEST(TEST_SUITE_NAME, ShouldAssertWhenResultDimsAreInvalidForTiledDeviceDotProdu
 }
 
 TEST(TEST_SUITE_NAME, DeviceMatrixValidationViaCublas) {
-
-    return;
     std::chrono::time_point<std::chrono::steady_clock> device_alloc_start;
     std::chrono::time_point<std::chrono::steady_clock> device_alloc_end;
     std::chrono::duration<double> device_elapsed;

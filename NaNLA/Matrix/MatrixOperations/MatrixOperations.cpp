@@ -222,10 +222,6 @@ namespace NaNLA::MatrixOperations {
     void hostTiledMatrixMultiply(LhsMatrix lhs, RhsMatrix rhs, ResultMatrix resultMatrix) {
         assertDotDims(lhs, rhs, resultMatrix);
 
-        uint64_t totalThreads = std::thread::hardware_concurrency();
-        NaNLA::Common::ThreadPool threadPool(totalThreads);
-        std::vector<std::future<void>> futures;
-
         const auto* _lhs = lhs.getMatrix();
         const auto* _rhs = rhs.getMatrix();
         auto* _result = resultMatrix.getMatrix();
@@ -239,20 +235,67 @@ namespace NaNLA::MatrixOperations {
 
         memset(_result, 0, resultMatrix.getActualTotalSize() * sizeof(typename ResultMatrix::DataType));
 
+        // Collect all (row, col) tile pairs
+        std::vector<std::tuple<uint64_t, uint64_t, uint64_t>> tileTasks;
         uint64_t resultBlockOffset = 0;
-        for(uint64_t rowBlockOffset = 0; rowBlockOffset < lhsSize; rowBlockOffset += dimTileIncr) {
-            for(uint64_t colBlockOffset = 0; colBlockOffset < rhsSize; colBlockOffset += dimTileIncr) {
-                futures.emplace_back(threadPool.queue([&blockSize,
-                                  &_lhs, &_rhs, &_result, &dimTileIncr,
-                                  &tileSize](uint64_t rowBlockOffset, uint64_t colBlockOffset, uint64_t resultBlockOffset) {
+        for (uint64_t rowBlockOffset = 0; rowBlockOffset < lhsSize; rowBlockOffset += dimTileIncr) {
+            for (uint64_t colBlockOffset = 0; colBlockOffset < rhsSize; colBlockOffset += dimTileIncr) {
+                tileTasks.emplace_back(rowBlockOffset, colBlockOffset, resultBlockOffset);
+                resultBlockOffset += blockSize;
+            }
+        }
+
+        // === Dynamic cutoff ===
+        constexpr size_t MIN_TILES_FOR_PARALLEL = 32; // tweak based on profiling
+        if (tileTasks.size() < MIN_TILES_FOR_PARALLEL) {
+            // Run single-threaded if problem is too small
+            for (auto [rowBlockOffset, colBlockOffset, resultBlockOffset] : tileTasks) {
+                for (uint64_t kBlock = 0; kBlock < dimTileIncr; kBlock += blockSize) {
+                    const uint64_t lhsBlockOffset = rowBlockOffset + kBlock;
+                    const uint64_t rhsBlockOffset = colBlockOffset + kBlock;
+
+                    for (uint64_t i = 0; i < tileSize; i++) {
+                        const uint64_t lhsOffset = lhsBlockOffset + i * tileSize;
+                        for (uint64_t j = 0; j < tileSize; j++) {
+                            const uint64_t rhsOffset = rhsBlockOffset + j * tileSize;
+                            typename ResultMatrix::DataType sum = 0;
+                            for (uint64_t k = 0; k < tileSize; k++) {
+                                sum += _lhs[lhsOffset + k] * _rhs[rhsOffset + k];
+                            }
+                            _result[resultBlockOffset + i * tileSize + j] += sum;
+                        }
+                    }
+                }
+            }
+            return;
+        }
+
+        // === Multithreaded path ===
+        uint64_t totalThreads = std::thread::hardware_concurrency();
+        NaNLA::Common::ThreadPool threadPool(totalThreads);
+        std::vector<std::future<void>> futures;
+
+        size_t tasksPerThread = (tileTasks.size() + totalThreads - 1) / totalThreads;
+
+        for (uint64_t t = 0; t < totalThreads; t++) {
+            size_t begin = t * tasksPerThread;
+            size_t end   = min(tileTasks.size(), (t + 1) * tasksPerThread);
+
+            if (begin >= end) break; // no work for this thread
+
+            futures.emplace_back(threadPool.queue([=, &_lhs, &_rhs, &_result]() {
+                for (size_t idx = begin; idx < end; idx++) {
+                    auto [rowBlockOffset, colBlockOffset, resultBlockOffset] = tileTasks[idx];
+
                     for (uint64_t kBlock = 0; kBlock < dimTileIncr; kBlock += blockSize) {
                         const uint64_t lhsBlockOffset = rowBlockOffset + kBlock;
                         const uint64_t rhsBlockOffset = colBlockOffset + kBlock;
+
                         for (uint64_t i = 0; i < tileSize; i++) {
                             const uint64_t lhsOffset = lhsBlockOffset + i * tileSize;
                             for (uint64_t j = 0; j < tileSize; j++) {
                                 const uint64_t rhsOffset = rhsBlockOffset + j * tileSize;
-                                typename ResultMatrix::DataType sum = (typename ResultMatrix::DataType) 0;
+                                typename ResultMatrix::DataType sum = 0;
                                 for (uint64_t k = 0; k < tileSize; k++) {
                                     sum += _lhs[lhsOffset + k] * _rhs[rhsOffset + k];
                                 }
@@ -260,12 +303,11 @@ namespace NaNLA::MatrixOperations {
                             }
                         }
                     }
-                }, rowBlockOffset, colBlockOffset, resultBlockOffset));
-                resultBlockOffset += blockSize;
-            }
+                }
+            }));
         }
 
-        for(const auto& future : futures) {
+        for (auto& future : futures) {
             future.wait();
         }
     }

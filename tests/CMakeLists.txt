@@ -34,8 +34,8 @@ set(SOURCE  "src/CommonTestSuites/CudaDeviceGuardTestSuite/CudaDeviceGuardTestSu
             "src/MatrixTestSuites/MemoryControllerTestSuites/DeviceMemoryControllerTestSuite.cpp"
             "src/MatrixTestSuites/MemoryControllerTestSuites/TiledHostMemoryControllerTestSuite.cpp"
             "src/MatrixTestSuites/MemoryControllerTestSuites/TiledDeviceMemoryControllerTestSuite.cpp"
-            "src/MatrixTestSuites/MatrixTransposeTestSuite.cpp"
             "src/MatrixTestSuites/MatrixDotProductTestSuite.cpp"
+            "src/MatrixTestSuites/MatrixTransposeTestSuite.cpp"
             "src/MatrixTestSuites/TransferStrategyTestSuites/TransferStrategyTestSuite.cpp"
             )
 
