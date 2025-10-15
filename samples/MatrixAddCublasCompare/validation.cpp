@@ -8,7 +8,7 @@
 #include <iostream>
 #include <NaNLA/Matrix/MemoryController/HostMemoryController.h>
 #include <NaNLA/Matrix/MemoryController/MemoryController.h>
-#include <NaNLA/Matrix/Matrix.h>
+#include "NaNLA/Matrix/AbstractMatrix.h"
 #include <NaNLA/Matrix/HostMatrix.h>
 #include <NaNLA/Matrix/TiledHostMatrix.h>
 #include <NaNLA/Matrix/DeviceMatrix.h>

@@ -165,7 +165,7 @@ bool validate_dot_product_result(const float* C_gpu,
 
 template<class T, class U, class V>
 void hostDot(T t, U u, V v) {
-    t.dot(u, v);
+    t.multiply(u, v);
 }
 
 template<class T, class U, class V>
@@ -470,7 +470,7 @@ TEST(TEST_SUITE_NAME, HostMatrixValidationViaCublas) {
 
                 NaNLA::HostMatrix<float, NaNLA::MemoryControllers::HostMemoryController> c2(m, n);
 
-                a2.dot(b2, c2);
+                a2.multiply(b2, c2);
 
                 ASSERT_TRUE(validate_dot_product_result(c1, c2, m, n));
 
@@ -496,7 +496,7 @@ TEST(TEST_SUITE_NAME, HostTiledMatrixValidationViaCublas) {
 
                 NaNLA::RowTiledHostMatrix<float> c2(m, n, 16);
 
-                a2.dot(b2, c2);
+                a2.multiply(b2, c2);
 
                 ASSERT_TRUE(validate_dot_product_result(c1, c2, m, n));
 

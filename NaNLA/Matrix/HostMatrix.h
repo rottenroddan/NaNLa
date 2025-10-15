@@ -24,7 +24,7 @@ namespace NaNLA {
         void add(const HostMatrix<RhsNumericType, RhsController> rhs, HostMatrix<rNumericType, ResultController>) const;
 
         template<class rNumericType = NumericType, template<class> class ResultController = Controller, class RhsNumericType, template<class> class RhsController>
-        void dot(const HostMatrix<RhsNumericType, RhsController> rhs, HostMatrix<rNumericType, ResultController>) const;
+        void multiply(const HostMatrix<RhsNumericType, RhsController> rhs, HostMatrix<rNumericType, ResultController>) const;
 
         HostMatrix<NumericType, Controller> T() const;
 

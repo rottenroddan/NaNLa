@@ -54,7 +54,8 @@ target_sources(${PROJECT_NAME}
         ${NANLA_SOURCE_DIR}/NaNLA/Common/CommonKernel.cu
         ${NANLA_SOURCE_DIR}/NaNLA/Matrix/TransferStrategy/DefaultTransferStrategyCudaKernels.cu
         ${NANLA_SOURCE_DIR}/NaNLA/Matrix/MatrixOperations/MatrixCudaOperations.cu
-        ${NANLA_SOURCE_DIR}/NaNLA/Matrix/empty.cpp)
+        ${NANLA_SOURCE_DIR}/NaNLA/Matrix/empty.cpp
+        ${NANLA_SOURCE_DIR}/NaNLA/NeuralNetwork/nn_inst.cpp)
 
 set(NANLA_DLL_PATH ${CMAKE_BINARY_DIR}/${PROJECT_NAME}/${PROJECT_NAME}.dll)
 set(NANLA_DLL_PATH ${CMAKE_BINARY_DIR}/${PROJECT_NAME}/${PROJECT_NAME}.dll PARENT_SCOPE)

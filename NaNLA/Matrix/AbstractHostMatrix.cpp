@@ -7,23 +7,23 @@
 namespace NaNLA::Internal {
     template<class NumericType, class ExplicitController>
     AbstractHostMatrix<NumericType, ExplicitController>::AbstractHostMatrix(
-            const AbstractHostMatrix<NumericType, ExplicitController> &abstractHostMatrix) : Matrix<NumericType, ExplicitController>(abstractHostMatrix) { ; }
+            const AbstractHostMatrix<NumericType, ExplicitController> &abstractHostMatrix) : AbstractMatrix<NumericType, ExplicitController>(abstractHostMatrix) { ; }
 
     template<class NumericType, class ExplicitController>
     __forceinline auto AbstractHostMatrix<NumericType, ExplicitController>::at(uint64_t i, uint64_t j) -> NumericType& {
-        return this->controller->at(i,j);
+        return this->_concreteController->at(i,j);
     }
 
     template<class NumericType, class ExplicitController>
     __forceinline auto AbstractHostMatrix<NumericType, ExplicitController>::get(uint64_t i, uint64_t j) const -> NumericType {
-        return this->controller->get(i,j);
+        return this->_concreteController->get(i,j);
     }
 
     template<class NumericType, class ExplicitController>
     AbstractHostMatrix<NumericType, ExplicitController>& AbstractHostMatrix<NumericType, ExplicitController>
             ::operator=(const AbstractHostMatrix<NumericType, ExplicitController>& other) {
         if(this != &other) {
-            Internal::Matrix<NumericType, ExplicitController>::operator=(other);
+            Internal::AbstractMatrix<NumericType, ExplicitController>::operator=(other);
         }
         return *this;
     }

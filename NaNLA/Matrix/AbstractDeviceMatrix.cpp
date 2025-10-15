@@ -8,7 +8,7 @@ namespace NaNLA::Internal {
     template<class NumericType, class ExplicitController>
     template<class... Args>
     AbstractDeviceMatrix<NumericType, ExplicitController>::AbstractDeviceMatrix(Args ...args)
-    : Matrix<NumericType, ExplicitController>(args...) {
+    : AbstractMatrix<NumericType, ExplicitController>(args...) {
         ;
     }
 

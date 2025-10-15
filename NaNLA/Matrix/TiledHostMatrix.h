@@ -7,6 +7,7 @@
 
 #include "AbstractHostMatrix.h"
 #include "MatrixOperations/MatrixOperations.h"
+#include "MemoryController/Tileable.h"
 
 namespace NaNLA {
     template<class NumericType, template<class, template<class> class,
@@ -58,7 +59,7 @@ namespace NaNLA {
                 template<class, template<class> class,template<class> class> class RhsTiledController,
                 template<class> class RhsController,
                 template<class> class RhsTileDetails>
-        void dot(const TiledHostMatrix<RhsNumericType, RhsTiledController, RhsController, RhsTileDetails > rhs,
+        void multiply(const TiledHostMatrix<RhsNumericType, RhsTiledController, RhsController, RhsTileDetails > rhs,
                  TiledHostMatrix<rNumericType, rTiledController, rController, rTileDetails > resultMatrix) const;
 
         TiledHostMatrix<NumericType, TiledController, Controller, TileDetails> T();

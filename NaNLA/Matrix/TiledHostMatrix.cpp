@@ -21,7 +21,7 @@ namespace NaNLA {
             template<class> class Controller,
             template<class> class TileDetails>
     auto TiledHostMatrix<NumericType, TiledController, Controller, TileDetails>::getTileSize() const -> uint64_t {
-        return this->controller->getTileSize();
+        return this->_concreteController->getTileSize();
     }
 
     template<class NumericType, template<class, template<class> class,
@@ -29,7 +29,7 @@ namespace NaNLA {
             template<class> class Controller,
             template<class> class TileDetails>
     auto constexpr TiledHostMatrix<NumericType, TiledController, Controller, TileDetails>::getTileMajor() -> bool {
-        return this->controller->getTileMajor();
+        return this->_concreteController->getTileMajor();
     }
 
 template<class NumericType, template<class, template<class> class,
@@ -37,7 +37,7 @@ template<class NumericType, template<class, template<class> class,
         template<class> class Controller,
         template<class> class TileDetails>
 auto TiledHostMatrix<NumericType, TiledController, Controller, TileDetails>::getTileRows() const -> uint64_t {
-    return this->controller->getTileRows();
+    return this->_concreteController->getTileRows();
 }
 
 template<class NumericType, template<class, template<class> class,
@@ -45,7 +45,7 @@ template<class NumericType, template<class, template<class> class,
         template<class> class Controller,
         template<class> class TileDetails>
 auto TiledHostMatrix<NumericType, TiledController, Controller, TileDetails>::getTileCols() const -> uint64_t{
-    return this->controller->getTileCols();
+    return this->_concreteController->getTileCols();
 }
 
 
@@ -111,7 +111,7 @@ auto TiledHostMatrix<NumericType, TiledController, Controller, TileDetails>::get
             template<class, template<class> class,template<class> class> class RhsTiledController,
             template<class> class RhsController,
             template<class> class RhsTileDetails>
-    void TiledHostMatrix<NumericType, TiledController, Controller, TileDetails>::dot(
+    void TiledHostMatrix<NumericType, TiledController, Controller, TileDetails>::multiply(
             const TiledHostMatrix<RhsNumericType, RhsTiledController, RhsController, RhsTileDetails > rhs,
             TiledHostMatrix<rNumericType, rTiledController, rController, rTileDetails > resultMatrix) const {
         if constexpr (std::is_same_v<TileDetails<NumericType>, MemoryControllers::RowMajorTileDetails<NumericType>>

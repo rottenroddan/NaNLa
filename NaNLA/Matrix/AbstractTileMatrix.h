@@ -5,12 +5,12 @@
 #ifndef CUPYRE_R_ABSTRACTTILEMATRIX_H
 #define CUPYRE_R_ABSTRACTTILEMATRIX_H
 
-#include "Matrix.h"
+#include "AbstractMatrix.h"
 
 namespace NaNLA::Internal {
 
     template<class NumericType, class ExplicitController>
-    class AbstractTileMatrix : virtual public Internal::Matrix<NumericType, ExplicitController>  {
+    class AbstractTileMatrix : virtual public Internal::AbstractMatrix<NumericType, ExplicitController>  {
     public:
 
         AbstractTileMatrix(uint64_t rows, uint64_t cols, uint64_t tileSize);

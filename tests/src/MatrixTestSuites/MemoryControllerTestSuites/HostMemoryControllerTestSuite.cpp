@@ -6,7 +6,7 @@
 #include <NaNLA/Matrix/MemoryController/HostMemoryController.h>
 #include <NaNLA/Matrix/MemoryController/AbstractTileMemoryController.h>
 #include <NaNLA/Matrix/MemoryController/TiledHostMemoryController.h>
-#include <NaNLA/Matrix/Matrix.h>
+#include "NaNLA/Matrix/AbstractMatrix.h"
 #include <NaNLA/Matrix/HostMatrix.h>
 #include "../../../include/MatrixTestSuites/Utilities/TestUtilities.h"
 
